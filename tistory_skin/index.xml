@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<skin>
+  <information>
+    <name>Dining Doan Luxury Dark Skin</name>
+    <version>1.0</version>
+    <description>다이닝도안(Dining Doan) 공식 럭셔리 다크 모드 티스토리 스킨 (네이버 예약/지도 연동)</description>
+    <license>MIT License</license>
+  </information>
+  <author>
+    <name>Dining Doan</name>
+    <homepage>https://github.com/jaon13/DinningDoan</homepage>
+    <email>jaon13@users.noreply.github.com</email>
+  </author>
+  <default>
+    <recentEntries>5</recentEntries>
+    <recentComments>5</recentComments>
+    <recentTrackbacks>5</recentTrackbacks>
+    <itemsOnGuestbook>10</itemsOnGuestbook>
+    <tagsOnTagbox>20</tagsOnTagbox>
+    <tree>
+      <color>000000</color>
+      <bgColor>ffffff</bgColor>
+      <activeColor>000000</activeColor>
+      <activeBgColor>eeeeee</activeBgColor>
+    </tree>
+    <contentWidth>1100</contentWidth>
+  </default>
+</skin>

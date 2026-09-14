@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[##_page_title_##] :: [##_title_##]</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body id="[##_body_id_##]">
+  <s_t3>
+    <!-- Header & Wide Skin Banner -->
+    <header class="doan-header">
+      <div class="doan-nav-bar">
+        <a href="[##_blog_url_##]" class="doan-logo">
+          <img src="./images/logo_profile.png" alt="다이닝도안 로고">
+          다이닝도안
+        </a>
+        <ul class="doan-nav-menu">
+          <li><a href="[##_blog_url_##]/category/시그니처메뉴">시그니처 메뉴</a></li>
+          <li><a href="https://m.place.naver.com/restaurant/1068480543/location" target="_blank">오시는 길</a></li>
+          <li><a href="https://www.instagram.com/dining_doan" target="_blank">인스타그램</a></li>
+          <li><a href="tel:050713366161">전화문의</a></li>
+          <li>
+            <a href="https://m.place.naver.com/restaurant/1068480543/booking" target="_blank" class="btn-naver-booking">
+              [N] 실시간 네이버 예약
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="doan-hero-center">
+        <div class="doan-hero-subtitle">Modern Avant-Garde Gastropub</div>
+        <h1 class="doan-hero-title">맛과 멋이 공존하는 미식의 밤<br>다이닝도안</h1>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="doan-container">
+      <!-- Quick Action Info Bar -->
+      <section class="doan-quick-bar">
+        <div class="quick-item">
+          <span class="quick-label">Operating Hours</span>
+          <span class="quick-val">월~토 17:30 - 01:00</span>
+        </div>
+        <div class="quick-item">
+          <span class="quick-label">Location</span>
+          <span class="quick-val">부산 사하구 하단본점</span>
+        </div>
+        <div class="quick-item">
+          <span class="quick-label">Signature</span>
+          <span class="quick-val">1++ 차돌사시미 & 숙성회</span>
+        </div>
+        <div class="quick-item">
+          <span class="quick-label">Reservation</span>
+          <span class="quick-val" style="color: var(--naver-green);">네이버 실시간 예약 가능</span>
+        </div>
+      </section>
+
+      <!-- Post Detail View (글 본문 페이지) -->
+      <s_article_rep>
+        <article class="doan-article">
+          <header class="article-header">
+            <span class="post-category">[##_article_rep_category_##]</span>
+            <h2 class="article-title">[##_article_rep_title_##]</h2>
+            <div class="post-meta" style="justify-content: center; gap: 16px; margin-top: 10px;">
+              <span>[##_article_rep_date_##]</span>
+              <span>다이닝도안 공식</span>
+            </div>
+          </header>
+
+          <div class="article-content">
+            [##_article_rep_desc_##]
+
+            <!-- 네이버 예약 및 지도 연동 박스 (모든 글 하단 자동 삽입) -->
+            <div class="naver-place-box">
+              <div class="place-title">
+                📍 다이닝도안 하단본점 안내 및 네이버 예약
+              </div>
+              <div class="place-details">
+                <div><strong>주소:</strong> 부산광역시 사하구 낙동남로1423번길 139 1층 (하단역 도보 3분)</div>
+                <div><strong>영업시간:</strong> 17:30 - 01:00 (라스트오더 00:00 / 매주 일요일 정기휴무)</div>
+                <div><strong>주차:</strong> 매장 전용 타워 주차 2시간 무료 지원</div>
+              </div>
+              <div class="place-buttons">
+                <a href="https://m.place.naver.com/restaurant/1068480543/booking" target="_blank" class="btn-naver-link">
+                  [N] 네이버 실시간 예약하기
+                </a>
+                <a href="https://m.place.naver.com/restaurant/1068480543/location" target="_blank" class="btn-call-link">
+                  네이버 지도 길찾기
+                </a>
+                <a href="tel:050713366161" class="btn-call-link">
+                  전화 문의
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </s_article_rep>
+
+      <!-- Post List View (메인 홈 카드 그리드) -->
+      <s_list>
+        <div class="doan-post-grid">
+      </s_list>
+      <s_index_article_rep>
+          <div class="post-card">
+            <s_article_rep_thumbnail>
+              <div class="post-thumb">
+                <a href="[##_article_rep_link_##]">
+                  <img src="[##_article_rep_thumbnail_url_##]" alt="[##_article_rep_title_##]">
+                </a>
+              </div>
+            </s_article_rep_thumbnail>
+            <div class="post-info">
+              <span class="post-category">[##_article_rep_category_##]</span>
+              <h3 class="post-title"><a href="[##_article_rep_link_##]">[##_article_rep_title_##]</a></h3>
+              <p class="post-summary">[##_article_rep_summary_##]</p>
+              <div class="post-meta">
+                <span>[##_article_rep_date_##]</span>
+                <span style="color: var(--primary-gold);">자세히 보기 →</span>
+              </div>
+            </div>
+          </div>
+      </s_index_article_rep>
+      <s_list>
+        </div>
+      </s_list>
+    </main>
+
+    <!-- Footer -->
+    <footer class="doan-footer">
+      <div class="doan-footer-links">
+        <a href="https://m.place.naver.com/restaurant/1068480543/booking" target="_blank">네이버 실시간 예약</a>
+        <a href="https://m.place.naver.com/restaurant/1068480543/location" target="_blank">오시는 길</a>
+        <a href="https://www.instagram.com/dining_doan" target="_blank">공식 인스타그램</a>
+      </div>
+      <p>상호명: 다이닝도안 | 위치: 부산광역시 사하구 낙동남로1423번길 139 1층 | 예약문의: 0507-1336-6161</p>
+      <p style="margin-top: 8px;">Copyright © DINING DOAN. All Rights Reserved.</p>
+    </footer>
+  </s_t3>
+</body>
+</html>
