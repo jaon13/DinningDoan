@@ -90,7 +90,7 @@
 
   function handleQuickBooking() {
     // Direct redirect to Naver Booking for 100% verified real reservations
-    window.open('https://m.place.naver.com/restaurant/1068480543/booking', '_blank');
+    window.open('https://m.place.naver.com/restaurant/1059460378/booking', '_blank');
   }
 </script>
 
@@ -122,7 +122,7 @@
       <!-- Naver Direct Booking CTA -->
       <div class="flex items-center gap-3">
         <a 
-          href="https://m.place.naver.com/restaurant/1068480543/booking" 
+          href="https://m.place.naver.com/restaurant/1059460378/booking" 
           target="_blank"
           class="inline-flex items-center gap-2 bg-[#03C75A] hover:bg-[#02b150] text-white text-xs md:text-sm font-bold px-4 py-2.5 rounded-full shadow-lg shadow-[#03C75A]/25 hover:shadow-[#03C75A]/40 transition-all duration-200 transform hover:-translate-y-0.5"
         >
@@ -164,7 +164,7 @@
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
         <a 
-          href="https://m.place.naver.com/restaurant/1068480543/booking" 
+          href="https://m.place.naver.com/restaurant/1059460378/booking" 
           target="_blank"
           class="w-full sm:w-auto px-8 py-4 rounded-md bg-[#d4af37] hover:bg-[#c6923c] text-[#121215] font-bold text-sm md:text-base tracking-wider transition-all duration-200 shadow-xl shadow-[#d4af37]/20 flex items-center justify-center gap-3"
         >
@@ -287,7 +287,7 @@
                   <strong class="text-stone-300">{dish.pairing}</strong>
                 </span>
                 <a 
-                  href="https://m.place.naver.com/restaurant/1068480543/booking" 
+                  href="https://m.place.naver.com/restaurant/1059460378/booking" 
                   target="_blank"
                   class="text-[#03C75A] font-bold hover:underline"
                 >
@@ -302,7 +302,7 @@
       <!-- Naver Place Full Menu Link -->
       <div class="text-center mt-12">
         <a 
-          href="https://m.place.naver.com/restaurant/1068480543/menu" 
+          href="https://m.place.naver.com/restaurant/1059460378/menu" 
           target="_blank"
           class="inline-flex items-center gap-2 text-xs md:text-sm text-stone-300 hover:text-[#d4af37] border border-stone-700 hover:border-[#d4af37] px-6 py-3 rounded-full transition-colors"
         >
@@ -351,14 +351,14 @@
 
           <div class="flex flex-wrap gap-3">
             <a 
-              href="https://m.place.naver.com/restaurant/1068480543/booking" 
+              href="https://m.place.naver.com/restaurant/1059460378/booking" 
               target="_blank"
               class="px-6 py-3 rounded bg-[#03C75A] hover:bg-[#02b150] text-white font-bold text-sm shadow-lg shadow-[#03C75A]/20 transition-all flex items-center gap-2"
             >
               <span>[N] 네이버 실시간 예약</span>
             </a>
             <a 
-              href="https://m.place.naver.com/restaurant/1068480543/location" 
+              href="https://m.place.naver.com/restaurant/1059460378/location" 
               target="_blank"
               class="px-6 py-3 rounded bg-[#2a2a30] hover:bg-[#33333b] text-stone-200 border border-stone-700 text-sm font-medium transition-colors flex items-center gap-2"
             >
@@ -381,7 +381,7 @@
             <span class="font-serif text-lg text-white font-bold">다이닝도안 하단본점 (도안 1호점)</span>
             <span class="text-stone-300 text-xs">클릭하시면 네이버 내비게이션으로 바로 연결됩니다</span>
           </div>
-          <a href="https://m.place.naver.com/restaurant/1068480543/location" target="_blank" class="absolute inset-0"></a>
+          <a href="https://m.place.naver.com/restaurant/1059460378/location" target="_blank" class="absolute inset-0"></a>
         </div>
       </div>
     </div>
@@ -401,7 +401,7 @@
       <div class="flex items-center gap-6">
         <a href="https://blog.naver.com" target="_blank" class="hover:text-[#03C75A] transition-colors">공식 네이버 블로그</a>
         <a href="https://www.instagram.com/dining_doan" target="_blank" class="hover:text-[#d4af37] transition-colors">인스타그램</a>
-        <a href="https://m.place.naver.com/restaurant/1068480543/booking" target="_blank" class="hover:text-white transition-colors">네이버 예약</a>
+        <a href="https://m.place.naver.com/restaurant/1059460378/booking" target="_blank" class="hover:text-white transition-colors">네이버 예약</a>
       </div>
     </div>
     <div class="text-center text-[11px] text-stone-600 mt-8">
