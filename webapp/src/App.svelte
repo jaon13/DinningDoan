@@ -122,20 +122,28 @@
     menuOpen = false;
   }
 
+  /** Page-relative hero VOD (Vite base './' -> works under /DinningDoan/). */
+  const HERO_MOBILE_SRC = `${import.meta.env.BASE_URL}hero-mobile.mp4`;
+
   /**
    * Muted autoplay for iOS Safari / Android Chrome.
-   * Arms muted/playsInline before src load; retries on canplay / visibility / pageshow;
-   * first-touch starts muted play only (no controls).
+   * Video stays in DOM (CSS-hidden on desktop). Arms muted/playsInline before src;
+   * loads only on mobile MQ; retries via IntersectionObserver / visibility / pageshow /
+   * first-touch (muted only — never requires unmute).
    * @param {HTMLVideoElement} node
    */
   function autoplayMuted(node) {
     let playing = false;
     let gestureBound = false;
+    let srcAttached = false;
+    const mq = window.matchMedia('(max-width: 767px)');
+    const deferredSrc = node.dataset.src || HERO_MOBILE_SRC;
 
     const arm = () => {
       node.muted = true;
       node.defaultMuted = true;
       node.playsInline = true;
+      node.webkitPlaysInline = true;
       node.volume = 0;
       node.setAttribute('muted', '');
       node.setAttribute('playsinline', '');
@@ -151,15 +159,32 @@
     };
 
     const bindGesture = () => {
-      if (gestureBound || playing) return;
+      if (gestureBound || playing || !mq.matches) return;
       gestureBound = true;
       window.addEventListener('touchstart', onGesture, { capture: true, passive: true });
       window.addEventListener('pointerdown', onGesture, { capture: true, passive: true });
       window.addEventListener('click', onGesture, { capture: true });
     };
 
+    const attachSrc = () => {
+      if (srcAttached || !mq.matches) return;
+      arm();
+      node.preload = 'auto';
+      node.removeAttribute('src');
+      node.src = deferredSrc;
+      srcAttached = true;
+      try {
+        node.load();
+      } catch (_) {
+        /* ignore */
+      }
+    };
+
     const tryPlay = () => {
+      if (!mq.matches) return;
       if (playing && !node.paused) return;
+      attachSrc();
+      if (!node.src) return;
       arm();
       const p = node.play?.();
       if (p && typeof p.then === 'function') {
@@ -167,6 +192,7 @@
           playing = true;
           unbindGesture();
         }).catch(() => {
+          playing = false;
           bindGesture();
         });
       } else {
@@ -184,28 +210,50 @@
 
     const onPageShow = () => tryPlay();
 
-    arm();
-    // Defer src until muted/playsInline are set (iOS often ignores late mute).
-    const deferredSrc = node.dataset.src;
-    if (deferredSrc) {
-      node.removeAttribute('src');
-      node.src = deferredSrc;
-      try {
-        node.load();
-      } catch (_) {
-        /* ignore */
+    const onMqChange = () => {
+      if (mq.matches) {
+        tryPlay();
+      } else {
+        playing = false;
+        unbindGesture();
+        try {
+          node.pause();
+        } catch (_) {
+          /* ignore */
+        }
       }
-    }
+    };
 
-    tryPlay();
+    arm();
     node.addEventListener('loadeddata', tryPlay);
     node.addEventListener('canplay', tryPlay);
     node.addEventListener('canplaythrough', tryPlay);
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pageshow', onPageShow);
+    mq.addEventListener('change', onMqChange);
+
+    /** @type {IntersectionObserver | null} */
+    let io = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) tryPlay();
+          }
+        },
+        { threshold: 0.1, rootMargin: '0px' }
+      );
+      io.observe(node);
+    }
+
+    if (mq.matches) {
+      attachSrc();
+      tryPlay();
+    }
+
     // Low Power Mode / strict autoplay: arm muted tap-to-start if still paused.
     const gestureTimer = window.setTimeout(() => {
-      if (!playing || node.paused) bindGesture();
+      if (mq.matches && (!playing || node.paused)) bindGesture();
     }, 600);
 
     return {
@@ -216,6 +264,8 @@
         node.removeEventListener('canplaythrough', tryPlay);
         document.removeEventListener('visibilitychange', onVisibility);
         window.removeEventListener('pageshow', onPageShow);
+        mq.removeEventListener('change', onMqChange);
+        io?.disconnect();
         unbindGesture();
       },
     };
@@ -452,23 +502,21 @@
     <div class="absolute inset-0 z-0 overflow-hidden">
       <div bind:this={heroMedia} class="hero-media absolute inset-[-4%] will-change-transform">
         <img src={PLACE_IMG.hadanBar} alt="다이닝도안 하단본점 바 카운터 (네이버 플레이스)" class="w-full h-full object-cover object-center filter brightness-[0.62] contrast-110" referrerpolicy="no-referrer" />
-        <!-- Mobile-only hero atmosphere (blog VOD → public/hero-mobile.mp4); desktop keeps still + gradient -->
-        {#if isMobileViewport}
-          <video
-            use:autoplayMuted
-            class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
-            data-src="./hero-mobile.mp4"
-            muted
-            playsinline
-            webkit-playsinline
-            autoplay
-            loop
-            preload="auto"
-            disablepictureinpicture
-            disableremoteplayback
-            aria-hidden="true"
-          ></video>
-        {/if}
+        <!-- Mobile hero atmosphere (blog VOD → public/hero-mobile.mp4); always in DOM, CSS-hidden on md+ -->
+        <video
+          use:autoplayMuted
+          class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none md:hidden"
+          data-src={HERO_MOBILE_SRC}
+          muted
+          playsinline
+          webkit-playsinline
+          autoplay
+          loop
+          preload="metadata"
+          disablepictureinpicture
+          disableremoteplayback
+          aria-hidden="true"
+        ></video>
       </div>
       <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/65 to-black/50"></div>
       <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/12 via-transparent to-transparent"></div>
