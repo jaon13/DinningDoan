@@ -689,7 +689,7 @@
         <div class="pt-2 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-x-6 sm:gap-y-2 text-stone-300 text-xs">
           <div>✓ 국내산 한우만 취급 (당일 손질)</div>
           <div>✓ 조리가 아닌 요리로 대접</div>
-          <div>✓ 맛과 분위기를 서로 잡은 요리주점</div>
+          <div>✓ 맛과 분위기를 사로 잡은 요리주점</div>
           <div>✓ 1차부터 막차까지 가능한 아주 라인업</div>
           <div>✓ 데이트 친목 모임 행사 완벽한곳</div>
         </div>
