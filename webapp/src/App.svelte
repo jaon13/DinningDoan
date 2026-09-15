@@ -126,6 +126,68 @@
     return { destroy };
   }
 
+  /**
+   * Mobile snap carousel prev/next — keeps native swipe; nav hidden on sm+ via CSS.
+   * @param {HTMLElement} shell
+   */
+  function carouselShell(shell) {
+    const track = shell.querySelector('.card-carousel');
+    const prevBtn = shell.querySelector('[data-carousel-prev]');
+    const nextBtn = shell.querySelector('[data-carousel-next]');
+    const nav = shell.querySelector('.card-carousel-nav');
+    if (!track || !prevBtn || !nextBtn) return {};
+
+    const slides = () =>
+      [...track.children].filter((el) => !el.classList.contains('card-carousel-empty'));
+
+    function slideStep() {
+      const first = slides()[0];
+      if (!first) return track.clientWidth * 0.85;
+      const styles = getComputedStyle(track);
+      const gap = parseFloat(styles.columnGap || styles.gap) || 16;
+      return first.getBoundingClientRect().width + gap;
+    }
+
+    function updateEdges() {
+      const max = Math.max(0, track.scrollWidth - track.clientWidth);
+      const atStart = track.scrollLeft <= 4;
+      const atEnd = max <= 4 || track.scrollLeft >= max - 4;
+      prevBtn.disabled = atStart;
+      nextBtn.disabled = atEnd;
+      if (nav) nav.hidden = max <= 4;
+      shell.classList.toggle('is-at-start', atStart);
+      shell.classList.toggle('is-at-end', atEnd);
+    }
+
+    const onPrev = () => track.scrollBy({ left: -slideStep(), behavior: 'smooth' });
+    const onNext = () => track.scrollBy({ left: slideStep(), behavior: 'smooth' });
+
+    prevBtn.addEventListener('click', onPrev);
+    nextBtn.addEventListener('click', onNext);
+    track.addEventListener('scroll', updateEdges, { passive: true });
+
+    const ro = new ResizeObserver(updateEdges);
+    ro.observe(track);
+
+    const mo = new MutationObserver(() => {
+      track.scrollTo({ left: 0 });
+      requestAnimationFrame(updateEdges);
+    });
+    mo.observe(track, { childList: true });
+
+    requestAnimationFrame(updateEdges);
+
+    return {
+      destroy() {
+        prevBtn.removeEventListener('click', onPrev);
+        nextBtn.removeEventListener('click', onNext);
+        track.removeEventListener('scroll', updateEdges);
+        ro.disconnect();
+        mo.disconnect();
+      },
+    };
+  }
+
   onMount(() => {
     const handleScroll = () => {
       isScrolled = window.scrollY > 40;
@@ -452,50 +514,64 @@
         <p class="text-center text-sm text-amber-500/90 mb-8">{blogLoadError}</p>
       {/if}
 
-      <div class="card-carousel" role="list">
-        {#each latestBlogPosts as post (post.link)}
-          <a
-            href={post.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            use:tilt
-            role="listitem"
-            class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col text-left"
-          >
-            <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-[#121215]">
-              {#if post.thumbnail}
-                <img
-                  src={post.thumbnail}
-                  alt=""
-                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              {:else}
-                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1f1f24] via-[#1a1a1e] to-[#121215]">
-                  <span class="font-serif text-[#d4af37]/50 text-sm tracking-widest">DINING DOAN</span>
-                </div>
-              {/if}
-            </div>
-            <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-3">
-              <div>
-                {#if post.dateDisplay}
-                  <time class="text-[10px] uppercase tracking-[0.15em] text-[#d4af37]/80 font-semibold block mb-2" datetime={post.date || undefined}>
-                    {post.dateDisplay}
-                  </time>
+      <div class="card-carousel-shell" use:carouselShell>
+        <div class="card-carousel" role="list">
+          {#each latestBlogPosts as post (post.link)}
+            <a
+              href={post.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              use:tilt
+              role="listitem"
+              class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col text-left"
+            >
+              <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-[#121215]">
+                {#if post.thumbnail}
+                  <img
+                    src={post.thumbnail}
+                    alt=""
+                    class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    loading="lazy"
+                  />
+                {:else}
+                  <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1f1f24] via-[#1a1a1e] to-[#121215]">
+                    <span class="font-serif text-[#d4af37]/50 text-sm tracking-widest">DINING DOAN</span>
+                  </div>
                 {/if}
-                <h3 class="font-serif text-base sm:text-lg font-semibold text-white leading-snug line-clamp-2">{post.title}</h3>
               </div>
-              <div class="pt-3 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
-                <span class="text-stone-500">네이버 블로그</span>
-                <span class="text-[#d4af37] font-bold">읽어보기 →</span>
+              <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-3">
+                <div>
+                  {#if post.dateDisplay}
+                    <time class="text-[10px] uppercase tracking-[0.15em] text-[#d4af37]/80 font-semibold block mb-2" datetime={post.date || undefined}>
+                      {post.dateDisplay}
+                    </time>
+                  {/if}
+                  <h3 class="font-serif text-base sm:text-lg font-semibold text-white leading-snug line-clamp-2">{post.title}</h3>
+                </div>
+                <div class="pt-3 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
+                  <span class="text-stone-500">네이버 블로그</span>
+                  <span class="text-[#d4af37] font-bold">읽어보기 →</span>
+                </div>
               </div>
-            </div>
-          </a>
-        {:else}
-          {#if !blogLoadError}
-            <p class="card-carousel-empty text-center text-stone-500 text-sm py-8">표시할 소식이 없습니다. npm run sync:blog 후 다시 확인하세요.</p>
-          {/if}
-        {/each}
+            </a>
+          {:else}
+            {#if !blogLoadError}
+              <p class="card-carousel-empty text-center text-stone-500 text-sm py-8">표시할 소식이 없습니다. npm run sync:blog 후 다시 확인하세요.</p>
+            {/if}
+          {/each}
+        </div>
+        <div class="card-carousel-nav" role="group" aria-label="소식 카드 넘기기">
+          <button type="button" class="card-carousel-btn" data-carousel-prev aria-label="이전 소식">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <button type="button" class="card-carousel-btn" data-carousel-next aria-label="다음 소식">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="mt-8 sm:mt-10 flex justify-center reveal">
@@ -573,93 +649,107 @@
       {/if}
 
       <!-- Menu Grid / mobile snap carousel -->
-      <div class="card-carousel" role="list">
-        {#each filteredDishes as dish (dish.id)}
-          <a
-            href={menuListUrl(dish.placeId)}
-            target="_blank"
-            rel="noopener noreferrer"
+      <div class="card-carousel-shell" use:carouselShell>
+        <div class="card-carousel" role="list">
+          {#each filteredDishes as dish (dish.id)}
+            <a
+              href={menuListUrl(dish.placeId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              use:tilt
+              role="listitem"
+              class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col text-left"
+            >
+              <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-[#121215]">
+                <img
+                  src={dishImage(dish)}
+                  alt={dish.name}
+                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                />
+                <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-1">
+                  {#if dish.recommend}
+                    <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] text-[#d4af37] font-semibold border border-[#d4af37]/30">추천</span>
+                  {/if}
+                  <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] text-stone-300 font-semibold border border-stone-600/50">{dish.category}</span>
+                </div>
+              </div>
+
+              <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start mb-2">
+                    <h3 class="font-serif text-base sm:text-lg font-semibold text-white leading-snug">{dish.name}</h3>
+                    <span class="font-mono text-sm font-bold text-[#d4af37] sm:ml-2 shrink-0">{dish.price}</span>
+                  </div>
+                  {#if dish.desc}
+                    <p class="text-stone-400 text-xs leading-relaxed mb-4 line-clamp-3">{dish.desc}</p>
+                  {/if}
+                </div>
+
+                <div class="pt-3 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
+                  <span class="text-stone-500">네이버 메뉴판</span>
+                  <span class="text-[#03C75A] font-bold">자세히 보기 →</span>
+                </div>
+              </div>
+            </a>
+          {:else}
+            {#if !menuLoadError}
+              <p class="card-carousel-empty text-center text-stone-500 text-sm py-8">이 카테고리에 표시할 메뉴가 없습니다.</p>
+            {/if}
+          {/each}
+
+          <!-- 메뉴 더보기 — 네이버 플레이스 전체 메뉴판 (carousel slide + grid cell) -->
+          <div
             use:tilt
             role="listitem"
-            class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col text-left"
+            class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col"
           >
-            <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-[#121215]">
-              <img
-                src={dishImage(dish)}
-                alt={dish.name}
-                class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                referrerpolicy="no-referrer"
-                loading="lazy"
-              />
-              <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-1">
-                {#if dish.recommend}
-                  <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] text-[#d4af37] font-semibold border border-[#d4af37]/30">추천</span>
-                {/if}
-                <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] text-stone-300 font-semibold border border-stone-600/50">{dish.category}</span>
+            <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-gradient-to-br from-[#1f1f24] via-[#1a1a1e] to-[#121215] flex items-center justify-center">
+              <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.12),transparent_65%)]" aria-hidden="true"></div>
+              <div class="relative text-center px-4">
+                <span class="text-[10px] uppercase tracking-[0.3em] text-[#d4af37]/80 font-semibold block mb-2">Naver Place Menu</span>
+                <p class="font-serif text-2xl sm:text-3xl text-white/90">메뉴 더보기</p>
               </div>
             </div>
 
-            <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-              <div>
-                <div class="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start mb-2">
-                  <h3 class="font-serif text-base sm:text-lg font-semibold text-white leading-snug">{dish.name}</h3>
-                  <span class="font-mono text-sm font-bold text-[#d4af37] sm:ml-2 shrink-0">{dish.price}</span>
-                </div>
-                {#if dish.desc}
-                  <p class="text-stone-400 text-xs leading-relaxed mb-4 line-clamp-3">{dish.desc}</p>
-                {/if}
-              </div>
+            <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-4">
+              <p class="text-stone-400 text-xs leading-relaxed">
+                전체 메뉴·가격·메뉴판 이미지는 네이버 플레이스에서 확인할 수 있습니다.
+              </p>
 
-              <div class="pt-3 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
-                <span class="text-stone-500">네이버 메뉴판</span>
-                <span class="text-[#03C75A] font-bold">자세히 보기 →</span>
+              <div class="flex flex-col gap-2">
+                <a
+                  href={menuListUrl(BRANCHES[0].placeId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-full py-3 rounded bg-[#d4af37] hover:bg-[#c4a030] text-[#121215] font-bold text-sm transition-colors flex items-center justify-center min-h-[44px]"
+                >
+                  하단본점 메뉴 더보기
+                </a>
+                <a
+                  href={menuListUrl(BRANCHES[1].placeId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-full py-2.5 text-center text-xs text-stone-400 hover:text-[#d4af37] transition-colors min-h-[40px] flex items-center justify-center"
+                >
+                  명지직영점 메뉴 보기 →
+                </a>
               </div>
-            </div>
-          </a>
-        {:else}
-          {#if !menuLoadError}
-            <p class="card-carousel-empty text-center text-stone-500 text-sm py-8">이 카테고리에 표시할 메뉴가 없습니다.</p>
-          {/if}
-        {/each}
-
-        <!-- 메뉴 더보기 — 네이버 플레이스 전체 메뉴판 (carousel slide + grid cell) -->
-        <div
-          use:tilt
-          role="listitem"
-          class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col"
-        >
-          <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-gradient-to-br from-[#1f1f24] via-[#1a1a1e] to-[#121215] flex items-center justify-center">
-            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.12),transparent_65%)]" aria-hidden="true"></div>
-            <div class="relative text-center px-4">
-              <span class="text-[10px] uppercase tracking-[0.3em] text-[#d4af37]/80 font-semibold block mb-2">Naver Place Menu</span>
-              <p class="font-serif text-2xl sm:text-3xl text-white/90">메뉴 더보기</p>
             </div>
           </div>
-
-          <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-4">
-            <p class="text-stone-400 text-xs leading-relaxed">
-              전체 메뉴·가격·메뉴판 이미지는 네이버 플레이스에서 확인할 수 있습니다.
-            </p>
-
-            <div class="flex flex-col gap-2">
-              <a
-                href={menuListUrl(BRANCHES[0].placeId)}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="w-full py-3 rounded bg-[#d4af37] hover:bg-[#c4a030] text-[#121215] font-bold text-sm transition-colors flex items-center justify-center min-h-[44px]"
-              >
-                하단본점 메뉴 더보기
-              </a>
-              <a
-                href={menuListUrl(BRANCHES[1].placeId)}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="w-full py-2.5 text-center text-xs text-stone-400 hover:text-[#d4af37] transition-colors min-h-[40px] flex items-center justify-center"
-              >
-                명지직영점 메뉴 보기 →
-              </a>
-            </div>
-          </div>
+        </div>
+        <div class="card-carousel-nav" role="group" aria-label="메뉴 카드 넘기기">
+          <button type="button" class="card-carousel-btn" data-carousel-prev aria-label="이전 메뉴">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <button type="button" class="card-carousel-btn" data-carousel-next aria-label="다음 메뉴">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
