@@ -55,7 +55,9 @@
   $: siteStatus = statusLabel(anyOpen);
 
   // PC: pcmap.place / Mobile viewport: m.place
-  let isMobileViewport = false;
+  // Sync on first paint so mobile hero <video> is in DOM before onMount (autoplay race).
+  let isMobileViewport =
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
   function placeUrl(placeId, path) {
     const host = isMobileViewport
       ? 'https://m.place.naver.com'
@@ -121,10 +123,15 @@
   }
 
   /**
-   * Muted autoplay for iOS Safari / Android Chrome (playsinline + muted before play).
+   * Muted autoplay for iOS Safari / Android Chrome.
+   * Arms muted/playsInline before src load; retries on canplay / visibility / pageshow;
+   * first-touch starts muted play only (no controls).
    * @param {HTMLVideoElement} node
    */
   function autoplayMuted(node) {
+    let playing = false;
+    let gestureBound = false;
+
     const arm = () => {
       node.muted = true;
       node.defaultMuted = true;
@@ -135,21 +142,81 @@
       node.setAttribute('webkit-playsinline', '');
     };
 
-    const tryPlay = () => {
-      arm();
-      const p = node.play?.();
-      if (p && typeof p.catch === 'function') p.catch(() => {});
+    const unbindGesture = () => {
+      if (!gestureBound) return;
+      gestureBound = false;
+      window.removeEventListener('touchstart', onGesture, true);
+      window.removeEventListener('pointerdown', onGesture, true);
+      window.removeEventListener('click', onGesture, true);
     };
 
+    const bindGesture = () => {
+      if (gestureBound || playing) return;
+      gestureBound = true;
+      window.addEventListener('touchstart', onGesture, { capture: true, passive: true });
+      window.addEventListener('pointerdown', onGesture, { capture: true, passive: true });
+      window.addEventListener('click', onGesture, { capture: true });
+    };
+
+    const tryPlay = () => {
+      if (playing && !node.paused) return;
+      arm();
+      const p = node.play?.();
+      if (p && typeof p.then === 'function') {
+        p.then(() => {
+          playing = true;
+          unbindGesture();
+        }).catch(() => {
+          bindGesture();
+        });
+      } else {
+        bindGesture();
+      }
+    };
+
+    function onGesture() {
+      tryPlay();
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') tryPlay();
+    };
+
+    const onPageShow = () => tryPlay();
+
     arm();
+    // Defer src until muted/playsInline are set (iOS often ignores late mute).
+    const deferredSrc = node.dataset.src;
+    if (deferredSrc) {
+      node.removeAttribute('src');
+      node.src = deferredSrc;
+      try {
+        node.load();
+      } catch (_) {
+        /* ignore */
+      }
+    }
+
     tryPlay();
     node.addEventListener('loadeddata', tryPlay);
     node.addEventListener('canplay', tryPlay);
+    node.addEventListener('canplaythrough', tryPlay);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pageshow', onPageShow);
+    // Low Power Mode / strict autoplay: arm muted tap-to-start if still paused.
+    const gestureTimer = window.setTimeout(() => {
+      if (!playing || node.paused) bindGesture();
+    }, 600);
 
     return {
       destroy() {
+        window.clearTimeout(gestureTimer);
         node.removeEventListener('loadeddata', tryPlay);
         node.removeEventListener('canplay', tryPlay);
+        node.removeEventListener('canplaythrough', tryPlay);
+        document.removeEventListener('visibilitychange', onVisibility);
+        window.removeEventListener('pageshow', onPageShow);
+        unbindGesture();
       },
     };
   }
@@ -390,7 +457,7 @@
           <video
             use:autoplayMuted
             class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
-            src="./hero-mobile.mp4"
+            data-src="./hero-mobile.mp4"
             muted
             playsinline
             webkit-playsinline
