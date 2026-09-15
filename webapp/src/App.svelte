@@ -452,13 +452,14 @@
         <p class="text-center text-sm text-amber-500/90 mb-8">{blogLoadError}</p>
       {/if}
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div class="card-carousel" role="list">
         {#each latestBlogPosts as post (post.link)}
           <a
             href={post.link}
             target="_blank"
             rel="noopener noreferrer"
             use:tilt
+            role="listitem"
             class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col text-left"
           >
             <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-[#121215]">
@@ -492,7 +493,7 @@
           </a>
         {:else}
           {#if !blogLoadError}
-            <p class="col-span-full text-center text-stone-500 text-sm py-8">표시할 소식이 없습니다. npm run sync:blog 후 다시 확인하세요.</p>
+            <p class="card-carousel-empty text-center text-stone-500 text-sm py-8">표시할 소식이 없습니다. npm run sync:blog 후 다시 확인하세요.</p>
           {/if}
         {/each}
       </div>
@@ -571,14 +572,15 @@
         <p class="text-center text-sm text-amber-500/90 mb-8">{menuLoadError}</p>
       {/if}
 
-      <!-- Menu Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <!-- Menu Grid / mobile snap carousel -->
+      <div class="card-carousel" role="list">
         {#each filteredDishes as dish (dish.id)}
           <a
             href={menuListUrl(dish.placeId)}
             target="_blank"
             rel="noopener noreferrer"
             use:tilt
+            role="listitem"
             class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col text-left"
           >
             <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-[#121215]">
@@ -616,13 +618,14 @@
           </a>
         {:else}
           {#if !menuLoadError}
-            <p class="col-span-full text-center text-stone-500 text-sm py-8">이 카테고리에 표시할 메뉴가 없습니다.</p>
+            <p class="card-carousel-empty text-center text-stone-500 text-sm py-8">이 카테고리에 표시할 메뉴가 없습니다.</p>
           {/if}
         {/each}
 
-        <!-- 메뉴 더보기 — 네이버 플레이스 전체 메뉴판 -->
+        <!-- 메뉴 더보기 — 네이버 플레이스 전체 메뉴판 (carousel slide + grid cell) -->
         <div
           use:tilt
+          role="listitem"
           class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col"
         >
           <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-gradient-to-br from-[#1f1f24] via-[#1a1a1e] to-[#121215] flex items-center justify-center">
