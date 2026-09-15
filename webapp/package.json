@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "sync:menu": "node scripts/sync-place-menu.mjs",
-    "prebuild": "npm run sync:menu",
+    "sync:blog": "node scripts/sync-blog.mjs",
+    "prebuild": "npm run sync:menu && npm run sync:blog",
     "build": "vite build",
     "preview": "vite preview"
   },

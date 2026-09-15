@@ -6,13 +6,14 @@
   const HeroAtmosphere = import('./lib/HeroAtmosphere.svelte').then((m) => m.default);
 
   const INSTAGRAM_URL = 'https://www.instagram.com/dining.doan/';
+  const BLOG_URL = 'https://blog.naver.com/snowybod';
 
   // Navigation Links
   const NAV_LINKS = [
     { name: '브랜드 스토리', href: '#story' },
     { name: '시그니처 메뉴', href: '#menu' },
+    { name: '소식', href: '#news' },
     { name: '지점 안내 & 예약', href: '#locations' },
-    { name: '공식 블로그', href: 'https://blog.naver.com', external: true },
     { name: '인스타그램', href: INSTAGRAM_URL, external: true },
   ];
 
@@ -99,6 +100,13 @@
     return dish?.image || PLACE_IMG.fallbackDish;
   }
 
+  // Blog / 소식 from Naver RSS (synced → public/blog-posts.json via npm run sync:blog)
+  /** @type {Array<{ title: string, link: string, date: string|null, dateDisplay: string, thumbnail: string|null }>} */
+  let blogPosts = [];
+  let blogSyncedAt = '';
+  let blogLoadError = '';
+  $: latestBlogPosts = blogPosts.slice(0, 6);
+
   /** @type {HTMLElement} */
   let pageRoot;
   /** @type {HTMLElement} */
@@ -164,6 +172,20 @@
       })
       .catch((err) => {
         menuLoadError = '네이버 메뉴를 불러오지 못했습니다. npm run sync:menu 후 새로고침하세요.';
+        console.warn(err);
+      });
+
+    fetch('./blog-posts.json')
+      .then((r) => {
+        if (!r.ok) throw new Error(`blog json ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        blogPosts = Array.isArray(data.posts) ? data.posts : [];
+        blogSyncedAt = data.syncedAt || '';
+      })
+      .catch((err) => {
+        blogLoadError = '블로그 소식을 불러오지 못했습니다. npm run sync:blog 후 새로고침하세요.';
         console.warn(err);
       });
 
@@ -562,7 +584,93 @@
     </div>
   </div>
 
-  <!-- 5. Branches & Reservation Section (하단본점 + 명지직영점 2개 지점 분기) -->
+  <!-- 5. News / Blog — Naver Blog RSS sync -->
+  <section id="news" class="py-16 sm:py-20 md:py-24 bg-[#16161a] relative overflow-hidden">
+    <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/25 to-transparent" aria-hidden="true"></div>
+    <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/25 to-transparent" aria-hidden="true"></div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-10 reveal">
+        <span class="text-xs uppercase tracking-[0.25em] text-[#d4af37] font-semibold block mb-2">Naver Blog</span>
+        <h2 class="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-white">소식</h2>
+        <p class="text-stone-400 text-sm mt-3">
+          다이닝도안 공식 네이버 블로그의 최신 글입니다. 카드에서 원문으로 바로 이동합니다.
+        </p>
+        {#if blogSyncedAt}
+          <p class="text-[10px] text-stone-600 mt-2 font-mono">synced {blogSyncedAt.slice(0, 19).replace('T', ' ')} · npm run sync:blog</p>
+        {/if}
+      </div>
+
+      {#if blogLoadError}
+        <p class="text-center text-sm text-amber-500/90 mb-8">{blogLoadError}</p>
+      {/if}
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {#each latestBlogPosts as post (post.link)}
+          <a
+            href={post.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            use:tilt
+            class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col text-left"
+          >
+            <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-[#121215]">
+              {#if post.thumbnail}
+                <img
+                  src={post.thumbnail}
+                  alt=""
+                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+              {:else}
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1f1f24] via-[#1a1a1e] to-[#121215]">
+                  <span class="font-serif text-[#d4af37]/50 text-sm tracking-widest">DINING DOAN</span>
+                </div>
+              {/if}
+            </div>
+            <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-3">
+              <div>
+                {#if post.dateDisplay}
+                  <time class="text-[10px] uppercase tracking-[0.15em] text-[#d4af37]/80 font-semibold block mb-2" datetime={post.date || undefined}>
+                    {post.dateDisplay}
+                  </time>
+                {/if}
+                <h3 class="font-serif text-base sm:text-lg font-semibold text-white leading-snug line-clamp-2">{post.title}</h3>
+              </div>
+              <div class="pt-3 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
+                <span class="text-stone-500">네이버 블로그</span>
+                <span class="text-[#d4af37] font-bold">읽어보기 →</span>
+              </div>
+            </div>
+          </a>
+        {:else}
+          {#if !blogLoadError}
+            <p class="col-span-full text-center text-stone-500 text-sm py-8">표시할 소식이 없습니다. npm run sync:blog 후 다시 확인하세요.</p>
+          {/if}
+        {/each}
+      </div>
+
+      <div class="mt-8 sm:mt-10 flex justify-center reveal">
+        <a
+          href={BLOG_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 rounded-md bg-[#d4af37] hover:bg-[#c6923c] text-[#121215] font-bold text-sm tracking-wider transition-all duration-200 shadow-xl shadow-[#d4af37]/20 min-h-[48px]"
+        >
+          블로그에서 더보기
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="px-4 sm:px-6 my-1" aria-hidden="true">
+    <div class="curve-divider">
+      <svg viewBox="0 0 480 40" fill="none" preserveAspectRatio="none">
+        <path d="M0 28 C 80 8, 160 4, 240 18 C 320 32, 400 34, 480 14" stroke="currentColor" stroke-width="1.2" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- 6. Branches & Reservation Section (하단본점 + 명지직영점 2개 지점 분기) -->
   <section id="locations" class="py-16 sm:py-20 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
     <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12 reveal">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#03C75A]/10 border border-[#03C75A]/30 text-[#03C75A] text-[10px] sm:text-xs font-bold mb-3">
@@ -675,7 +783,7 @@
     </div>
   </section>
 
-  <!-- 6. Footer -->
+  <!-- 7. Footer -->
   <footer class="relative border-t border-stone-800/80 bg-[#0e0e11] py-10 sm:py-12 px-4 sm:px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
     <svg class="curve-accent curve-accent--footer" viewBox="0 0 320 40" fill="none" aria-hidden="true">
       <path d="M0 28 C 70 8, 140 6, 160 18 C 180 30, 250 32, 320 12" stroke="currentColor" stroke-width="1.1" />
@@ -691,7 +799,8 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-        <a href="https://blog.naver.com" target="_blank" rel="noopener noreferrer" class="hover:text-[#03C75A] transition-colors min-h-[44px] inline-flex items-center">공식 네이버 블로그</a>
+        <a href="#news" class="hover:text-[#d4af37] transition-colors min-h-[44px] inline-flex items-center">소식</a>
+        <a href={BLOG_URL} target="_blank" rel="noopener noreferrer" class="hover:text-[#03C75A] transition-colors min-h-[44px] inline-flex items-center">공식 네이버 블로그</a>
         <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" class="hover:text-[#d4af37] transition-colors min-h-[44px] inline-flex items-center gap-1.5">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
