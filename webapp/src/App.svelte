@@ -1131,7 +1131,7 @@
       </div>
     </div>
     <div class="text-center text-[11px] text-stone-600 mt-8">
-      Copyright © DINING DOAN. All Rights Reserved. Modern Avant-Garde Gastropub.
+      Copyright © DINING DOAN. All Rights Reserved. Modern Avant-Garde Gastropub. Design by Johnny
     </div>
   </footer>
 </div>
