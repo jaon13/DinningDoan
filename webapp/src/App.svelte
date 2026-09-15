@@ -273,7 +273,7 @@
   <header class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || menuOpen ? 'bg-[#1a1a1e]/95 backdrop-blur-md border-b border-[#d4af37]/20 py-3 shadow-2xl' : 'bg-transparent py-4 sm:py-5'}`}>
     <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
       <a href="#top" class="flex items-center gap-2 sm:gap-3 group min-w-0" on:click={closeMenu}>
-        <img src="/logo_profile.jpg" alt="다이닝도안 로고" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#d4af37]/40 group-hover:scale-105 transition-transform shrink-0 object-cover bg-[#121215]" />
+        <img src="./logo_profile.jpg" alt="다이닝도안 로고" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#d4af37]/40 group-hover:scale-105 transition-transform shrink-0 object-cover bg-[#121215]" />
         <div class="min-w-0">
           <span class="font-serif text-lg sm:text-xl font-bold tracking-wider text-[#d4af37]">다이닝도안</span>
           <span class="hidden xl:inline-block text-[10px] tracking-[0.25em] text-stone-400 ml-2 uppercase">Dining Doan</span>
@@ -883,7 +883,7 @@
     </svg>
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-xs text-stone-500">
       <div class="flex items-start sm:items-center gap-3">
-        <img src="/logo_profile.jpg" alt="다이닝도안" class="w-8 h-8 rounded-full border border-stone-700 shrink-0 object-cover bg-[#121215]" />
+        <img src="./logo_profile.jpg" alt="다이닝도안" class="w-8 h-8 rounded-full border border-stone-700 shrink-0 object-cover bg-[#121215]" />
         <div class="min-w-0">
           <span class="font-serif text-sm font-bold text-stone-300 block">다이닝도안 (Dining Doan)</span>
           <span class="block mt-1 leading-relaxed">하단본점: 부산 사하구 낙동남로1423번길 139</span>
