@@ -345,7 +345,7 @@
   <section
     id="top"
     bind:this={heroSection}
-    class="relative min-h-[100svh] sm:min-h-[90vh] sm:h-[90vh] flex items-center justify-center overflow-hidden pb-28 sm:pb-0"
+    class="hero-section relative sm:min-h-[90vh] sm:h-[90vh] flex items-start sm:items-center justify-center overflow-hidden sm:pb-0"
   >
     <!-- Ambient Background with Overlay -->
     <div class="absolute inset-0 z-0 overflow-hidden">
@@ -353,7 +353,7 @@
         <img src={PLACE_IMG.hadanBar} alt="다이닝도안 하단본점 바 카운터 (네이버 플레이스)" class="w-full h-full object-cover object-center filter brightness-[0.62] contrast-110" referrerpolicy="no-referrer" />
       </div>
       <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/55 to-black/45"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/12 via-transparent to-transparent"></div>
+      <div class="hero-radial-glow absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/12 via-transparent to-transparent"></div>
       <!-- Curve accent fragment (site language; Three.js stays secondary) -->
       <svg class="curve-accent curve-accent--hero" viewBox="0 0 320 120" fill="none" aria-hidden="true">
         <path d="M8 88 C 70 18, 150 8, 220 42 C 270 66, 300 78, 312 72" stroke="currentColor" stroke-width="1.25" />
@@ -366,7 +366,7 @@
     {/await}
 
     <!-- Hero Content -->
-    <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center mt-16 sm:mt-12">
+    <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center mt-0 sm:mt-12">
       <div class="hero-enter inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 sm:px-4 py-1.5 rounded-full bg-[#2a2a30]/80 border border-[#d4af37]/30 text-[#d4af37] text-[10px] sm:text-xs font-semibold tracking-widest uppercase mb-5 sm:mb-6 backdrop-blur-md">
         <span>Busan Modern Gastropub</span>
         <span class="w-1 h-1 rounded-full bg-[#d4af37]"></span>

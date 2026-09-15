@@ -329,6 +329,18 @@ body {
 }
 
 @media (max-width: 767px) {
+  .hero-section {
+    min-height: min(76svh, 640px);
+    padding-top: 4.75rem;
+    padding-bottom: 5.25rem;
+  }
+  .hero-radial-glow {
+    background: radial-gradient(
+      ellipse 95% 58% at 50% 36%,
+      rgba(212, 175, 55, 0.11),
+      transparent 62%
+    ) !important;
+  }
   .reveal {
     transform: translateY(16px);
     filter: none;
