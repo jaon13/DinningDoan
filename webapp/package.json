@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "sync:menu": "node scripts/sync-place-menu.mjs",
+    "prebuild": "npm run sync:menu",
     "build": "vite build",
     "preview": "vite preview"
   },

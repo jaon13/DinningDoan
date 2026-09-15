@@ -59,66 +59,55 @@
     return `${host}/restaurant/${placeId}/${path}`;
   }
 
-  // Menu Data
+  // Naver Place CDN (ldb-phinf) — hotlinked hero/story stills (not served from public/)
+  // 하단본점 1059460378 / 명지직영점 2060161064
+  const PLACE_IMG = {
+    hadanBar:
+      'https://ldb-phinf.pstatic.net/20251102_77/1762073169573XAV1g_JPEG/DSC01198.jpg',
+    hadanTable:
+      'https://ldb-phinf.pstatic.net/20251102_247/1762073173601k2rC4_JPEG/DSC01229.jpg',
+    myeongjiSignature:
+      'https://ldb-phinf.pstatic.net/20260115_89/1768407740411KkrAW_JPEG/DSC01270.jpg',
+    fallbackDish:
+      'https://ldb-phinf.pstatic.net/20250924_245/1758723705193vCvmI_JPEG/DSC01162_%281%29.jpg',
+  };
+
+  function menuListUrl(placeId) {
+    return isMobileViewport
+      ? placeUrl(placeId, 'menu')
+      : placeUrl(placeId, 'menu/list');
+  }
+
+  // Full menu from Naver Place (synced → public/place-menu.json via npm run sync:menu)
   const MENU_CATEGORIES = ['전체', '시그니처 사시미', '한우 일품', '국물 & 요리', '전통주 페어링'];
   let activeCategory = '전체';
+  let activeMenuPlace = 'hadan';
+  let menuSyncedAt = '';
+  /** @type {Record<string, any>} */
+  let placeMenus = {};
+  let menuLoadError = '';
+  let boardLightbox = -1;
 
-  const DISHES = [
-    {
-      id: 1,
-      category: '시그니처 사시미',
-      name: '도안사시미 (제철 숙성 모둠사시미)',
-      price: '48,000원',
-      desc: '다이닝도안 대표 시그니처. 매일 새벽 산지 직송 최상급 어종만을 엄선하여 24시간 저온 숙성으로 찰기와 감칠맛을 극대화한 네이버 플레이스 실물 원본.',
-      tags: ['대표시그니처', '네이버실물원본', '저온숙성'],
-      image: '/place_myeongji_05.jpg',
-      pairing: '문경바람 오크 40°'
-    },
-    {
-      id: 2,
-      category: '한우 일품',
-      name: '한우 1++ 차돌박이 육사시미',
-      price: '38,000원',
-      desc: '당일 도축 최상급 1++ 한우 차돌박이만을 엄선. 특제 마늘 기름장과 생와사비의 극상 마리아주.',
-      tags: ['주문1위', '한우투뿔', '한정수량'],
-      image: '/place_myeongji_02.jpg',
-      pairing: '화요 25°'
-    },
-    {
-      id: 3,
-      category: '공간 & 무드',
-      name: '도안 바 카운터 & 오픈 키친',
-      price: '분위기 맛집',
-      desc: '은은한 황동 핀조명 아래 셰프의 조리 과정을 바로 눈앞에서 즐길 수 있는 도안만의 시그니처 카운터석.',
-      tags: ['실물인테리어', '데이트추천', '감성공간'],
-      image: '/place_hadan_01.jpg',
-      pairing: '하이볼 / 전통주'
-    },
-    {
-      id: 4,
-      category: '공간 & 무드',
-      name: '프라이빗 테이블 & 모임 좌석',
-      price: '예약 필수',
-      desc: '블랙 & 브라스 톤의 고급스러운 인테리어와 편안한 좌석 배치로 비즈니스 미팅과 소중한 기념일에 최적화.',
-      tags: ['매장실물', '단체예약', '단독좌석'],
-      image: '/place_hadan_04.jpg',
-      pairing: '프리미엄 페어링'
-    },
-    {
-      id: 5,
-      category: '전통주 페어링',
-      name: '문경바람 오크 40° 페어링 세트',
-      price: '55,000원',
-      desc: '문경 사과 증류 원액을 프렌치 오크통에서 숙성. 카빙 아이스볼 크리스털 잔과 함께 제공.',
-      tags: ['프리미엄', '오크숙성', '사과증류주'],
-      image: '/place_myeongji_01.jpg',
-      pairing: '숙성 사시미 추천'
-    }
-  ];
+  $: activePlaceMenu = placeMenus[activeMenuPlace] || null;
+  $: dishes = activePlaceMenu?.dishes || [];
+  $: menuBoards = activePlaceMenu?.menuBoards || [];
+  $: filteredDishes =
+    activeCategory === '전체' ? dishes : dishes.filter((d) => d.category === activeCategory);
 
-  $: filteredDishes = activeCategory === '전체' 
-    ? DISHES 
-    : DISHES.filter(d => d.category === activeCategory);
+  function dishImage(dish) {
+    return dish?.image || PLACE_IMG.fallbackDish;
+  }
+
+  function openBoard(i) {
+    boardLightbox = i;
+  }
+  function closeBoard() {
+    boardLightbox = -1;
+  }
+  function shiftBoard(delta) {
+    if (!menuBoards.length) return;
+    boardLightbox = (boardLightbox + delta + menuBoards.length) % menuBoards.length;
+  }
 
   /** @type {HTMLElement} */
   let pageRoot;
@@ -171,8 +160,34 @@
       nowTick = Date.now();
     }, 60_000);
 
+    const onKey = (e) => {
+      if (boardLightbox < 0) return;
+      if (e.key === 'Escape') closeBoard();
+      if (e.key === 'ArrowRight') shiftBoard(1);
+      if (e.key === 'ArrowLeft') shiftBoard(-1);
+    };
+    window.addEventListener('keydown', onKey);
+
+    fetch('./place-menu.json')
+      .then((r) => {
+        if (!r.ok) throw new Error(`menu json ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        placeMenus = data.places || {};
+        menuSyncedAt = data.syncedAt || '';
+        if (data.defaultPlace && placeMenus[data.defaultPlace]) {
+          activeMenuPlace = data.defaultPlace;
+        }
+      })
+      .catch((err) => {
+        menuLoadError = '네이버 메뉴를 불러오지 못했습니다. npm run sync:menu 후 새로고침하세요.';
+        console.warn(err);
+      });
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', onKey);
       unbindProgress();
       unbindReveals();
       unbindParallax();
@@ -268,7 +283,7 @@
     <!-- Ambient Background with Overlay -->
     <div class="absolute inset-0 z-0 overflow-hidden">
       <div bind:this={heroMedia} class="hero-media absolute inset-[-4%] will-change-transform">
-        <img src="/place_hadan_01.jpg" alt="다이닝도안 하단본점 바 카운터 (네이버 플레이스)" class="w-full h-full object-cover object-center filter brightness-[0.62] contrast-110" />
+        <img src={PLACE_IMG.hadanBar} alt="다이닝도안 하단본점 바 카운터 (네이버 플레이스)" class="w-full h-full object-cover object-center filter brightness-[0.62] contrast-110" referrerpolicy="no-referrer" />
       </div>
       <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/55 to-black/45"></div>
       <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/12 via-transparent to-transparent"></div>
@@ -374,7 +389,7 @@
         </svg>
         <div class="curve-media aspect-[4/3] border border-[#d4af37]/30 shadow-2xl">
           <!-- Real Original Dish Photo -->
-          <img src="/place_myeongji_05.jpg" alt="도안사시미 실물 원본 (네이버 플레이스 명지)" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+          <img src={PLACE_IMG.myeongjiSignature} alt="도안사시미 실물 원본 (네이버 플레이스 명지)" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" referrerpolicy="no-referrer" />
         </div>
       </div>
 
@@ -412,44 +427,82 @@
     </div>
   </div>
 
-  <!-- 4. Interactive Menu Showcase -->
+  <!-- 4. Interactive Menu Showcase — Naver Place full menu -->
   <section id="menu" class="py-16 sm:py-20 md:py-24 bg-[#16161a] relative overflow-hidden">
     <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/25 to-transparent" aria-hidden="true"></div>
     <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/25 to-transparent" aria-hidden="true"></div>
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12 reveal">
+      <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-10 reveal">
         <span class="text-xs uppercase tracking-[0.25em] text-[#d4af37] font-semibold block mb-2">Artisanal Dining Menu</span>
-        <h2 class="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-white">도안의 시그니처 미식 큐레이션</h2>
-        <p class="text-stone-400 text-sm mt-3">신선한 식재료 본연의 맛을 정갈한 현대적 한식 터치로 풀어낸 대표 요리들입니다.</p>
+        <h2 class="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-white">네이버 플레이스 전체 메뉴</h2>
+        <p class="text-stone-400 text-sm mt-3">
+          플레이스에 등록된 메뉴를 그대로 불러옵니다. 국물·짬뽕·일품까지 카테고리별로 살펴보세요.
+        </p>
+        {#if menuSyncedAt}
+          <p class="text-[10px] text-stone-600 mt-2 font-mono">synced {menuSyncedAt.slice(0, 19).replace('T', ' ')} · npm run sync:menu</p>
+        {/if}
       </div>
 
-      <!-- Category Filter Tabs -->
-      <div class="flex flex-nowrap sm:flex-wrap items-center justify-start sm:justify-center gap-2 mb-8 sm:mb-12 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
-        {#each MENU_CATEGORIES as cat}
-          <button 
-            on:click={() => activeCategory = cat}
-            class={`shrink-0 px-4 py-2.5 text-xs md:text-sm rounded-full transition-all duration-200 font-medium min-h-[40px] ${activeCategory === cat ? 'bg-[#d4af37] text-[#121215] font-bold shadow-lg shadow-[#d4af37]/20' : 'bg-[#1a1a1e] text-stone-400 border border-stone-800 hover:border-[#d4af37]/40 hover:text-white'}`}
+      <!-- Branch toggle -->
+      <div class="flex items-center justify-center gap-2 mb-5 reveal">
+        {#each BRANCHES as b}
+          <button
+            type="button"
+            on:click={() => { activeMenuPlace = b.id; activeCategory = '전체'; }}
+            class={`px-4 py-2 text-xs sm:text-sm font-semibold tracking-wide min-h-[40px] transition-colors border ${
+              activeMenuPlace === b.id
+                ? 'bg-[#d4af37]/15 border-[#d4af37] text-[#d4af37]'
+                : 'bg-transparent border-stone-700 text-stone-400 hover:border-[#d4af37]/40 hover:text-stone-200'
+            }`}
           >
-            {cat}
+            {b.id === 'hadan' ? '하단본점' : '명지직영점'}
           </button>
         {/each}
       </div>
 
-      <!-- Menu Grid Cards -->
+      <!-- Category Filter Tabs -->
+      <div class="flex flex-nowrap sm:flex-wrap items-center justify-start sm:justify-center gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
+        {#each MENU_CATEGORIES as cat}
+          <button
+            type="button"
+            on:click={() => (activeCategory = cat)}
+            class={`shrink-0 px-4 py-2.5 text-xs md:text-sm rounded-full transition-all duration-200 font-medium min-h-[40px] ${activeCategory === cat ? 'bg-[#d4af37] text-[#121215] font-bold shadow-lg shadow-[#d4af37]/20' : 'bg-[#1a1a1e] text-stone-400 border border-stone-800 hover:border-[#d4af37]/40 hover:text-white'}`}
+          >
+            {cat}
+            {#if cat !== '전체' && dishes.length}
+              <span class="opacity-70 ml-1">({dishes.filter((d) => d.category === cat).length})</span>
+            {/if}
+          </button>
+        {/each}
+      </div>
+
+      {#if menuLoadError}
+        <p class="text-center text-sm text-amber-500/90 mb-8">{menuLoadError}</p>
+      {/if}
+
+      <!-- Menu Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {#each filteredDishes as dish (dish.id)}
-          <div
+          <a
+            href={menuListUrl(dish.placeId)}
+            target="_blank"
+            rel="noopener noreferrer"
             use:tilt
-            class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col"
+            class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col text-left"
           >
-            <div class="curve-card-media aspect-[16/10] overflow-hidden relative">
-              <img src={dish.image} alt={dish.name} class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+            <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-[#121215]">
+              <img
+                src={dishImage(dish)}
+                alt={dish.name}
+                class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                referrerpolicy="no-referrer"
+                loading="lazy"
+              />
               <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-1">
-                {#each dish.tags as tag}
-                  <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] text-[#d4af37] font-semibold border border-[#d4af37]/30">
-                    {tag}
-                  </span>
-                {/each}
+                {#if dish.recommend}
+                  <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] text-[#d4af37] font-semibold border border-[#d4af37]/30">추천</span>
+                {/if}
+                <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] text-stone-300 font-semibold border border-stone-600/50">{dish.category}</span>
               </div>
             </div>
 
@@ -459,27 +512,168 @@
                   <h3 class="font-serif text-base sm:text-lg font-semibold text-white leading-snug">{dish.name}</h3>
                   <span class="font-mono text-sm font-bold text-[#d4af37] sm:ml-2 shrink-0">{dish.price}</span>
                 </div>
-                <p class="text-stone-400 text-xs leading-relaxed mb-4">{dish.desc}</p>
+                {#if dish.desc}
+                  <p class="text-stone-400 text-xs leading-relaxed mb-4 line-clamp-3">{dish.desc}</p>
+                {/if}
               </div>
 
-              <div class="pt-3 border-t border-stone-800/80 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-[11px] text-stone-400">
-                <span class="flex items-center gap-1.5 min-w-0">
-                  <span class="text-[#d4af37] shrink-0">페어링:</span>
-                  <strong class="text-stone-300 truncate">{dish.pairing}</strong>
-                </span>
-                <a 
-                  href="#locations"
-                  class="text-[#03C75A] font-bold hover:underline shrink-0"
-                >
-                  지점 예약 →
-                </a>
+              <div class="pt-3 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
+                <span class="text-stone-500">네이버 메뉴판</span>
+                <span class="text-[#03C75A] font-bold">자세히 보기 →</span>
               </div>
             </div>
-          </div>
+          </a>
+        {:else}
+          {#if !menuLoadError}
+            <p class="col-span-full text-center text-stone-500 text-sm py-8">이 카테고리에 표시할 메뉴가 없습니다.</p>
+          {/if}
         {/each}
+
+        <!-- 메뉴 더보기 — 네이버 플레이스 전체 메뉴판 -->
+        <div
+          use:tilt
+          class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col"
+        >
+          <div class="curve-card-media aspect-[16/10] overflow-hidden relative bg-gradient-to-br from-[#1f1f24] via-[#1a1a1e] to-[#121215] flex items-center justify-center">
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.12),transparent_65%)]" aria-hidden="true"></div>
+            <div class="relative text-center px-4">
+              <span class="text-[10px] uppercase tracking-[0.3em] text-[#d4af37]/80 font-semibold block mb-2">Naver Place Menu</span>
+              <p class="font-serif text-2xl sm:text-3xl text-white/90">메뉴 더보기</p>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-4">
+            <p class="text-stone-400 text-xs leading-relaxed">
+              전체 메뉴·가격·메뉴판 이미지는 네이버 플레이스에서 확인할 수 있습니다.
+            </p>
+
+            <div class="flex flex-col gap-2">
+              <a
+                href={menuListUrl(BRANCHES[0].placeId)}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full py-3 rounded bg-[#d4af37] hover:bg-[#c4a030] text-[#121215] font-bold text-sm transition-colors flex items-center justify-center min-h-[44px]"
+              >
+                하단본점 메뉴 더보기
+              </a>
+              <a
+                href={menuListUrl(BRANCHES[1].placeId)}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full py-2.5 text-center text-xs text-stone-400 hover:text-[#d4af37] transition-colors min-h-[40px] flex items-center justify-center"
+              >
+                명지직영점 메뉴 보기 →
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Menu board gallery (메뉴판 이미지로 보기) -->
+      {#if menuBoards.length}
+        <div id="menu-boards" class="mt-14 sm:mt-16 reveal">
+          <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+            <div>
+              <span class="text-[10px] uppercase tracking-[0.25em] text-[#d4af37] font-semibold block mb-1">Menu Boards</span>
+              <h3 class="font-serif text-xl sm:text-2xl text-white font-normal">메뉴판 이미지로 보기</h3>
+              <p class="text-stone-500 text-xs mt-1">네이버 플레이스에 등록된 메뉴판 {menuBoards.length}장 · 클릭하면 확대</p>
+            </div>
+            <a
+              href={menuListUrl(activePlaceMenu?.placeId || BRANCHES[0].placeId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-xs text-[#d4af37] hover:underline shrink-0"
+            >
+              네이버에서 메뉴판 열기 →
+            </a>
+          </div>
+
+          <div class="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-none">
+            {#each menuBoards as board, i (board.id)}
+              <button
+                type="button"
+                on:click={() => openBoard(i)}
+                class="snap-start shrink-0 w-[42vw] sm:w-44 md:w-52 aspect-[3/4] relative overflow-hidden border border-stone-800/80 hover:border-[#d4af37]/50 transition-colors group bg-[#121215] p-0"
+              >
+                <!-- absolute fill: % height on img inside <button> collapses to 0 in several engines -->
+                <img
+                  src={board.imageUrl}
+                  alt={board.label}
+                  class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.03] transition-transform duration-500"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="absolute bottom-0 inset-x-0 z-[1] py-2 px-2 text-[10px] tracking-wider text-stone-300 bg-gradient-to-t from-black/80 to-transparent">
+                  {board.label}
+                </span>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
     </div>
   </section>
+
+  {#if boardLightbox >= 0 && menuBoards[boardLightbox]}
+    <div
+      class="fixed inset-0 z-[80] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+      role="dialog"
+      tabindex="-1"
+      aria-modal="true"
+      aria-label="메뉴판 확대"
+      on:click={closeBoard}
+      on:keydown={(e) => e.key === 'Escape' && closeBoard()}
+    >
+      <button
+        type="button"
+        class="absolute top-4 right-4 text-stone-300 hover:text-white text-sm min-h-[44px] px-3"
+        on:click|stopPropagation={closeBoard}
+      >
+        닫기 ✕
+      </button>
+      <button
+        type="button"
+        class="absolute left-2 sm:left-6 text-[#d4af37] text-3xl min-w-[44px] min-h-[44px]"
+        on:click|stopPropagation={() => shiftBoard(-1)}
+        aria-label="이전 메뉴판"
+      >
+        ‹
+      </button>
+      <div
+        class="max-w-3xl w-full max-h-[85vh]"
+        role="document"
+        on:click|stopPropagation
+        on:keydown|stopPropagation
+      >
+        <img
+          src={menuBoards[boardLightbox].imageUrl}
+          alt={menuBoards[boardLightbox].label}
+          class="w-full h-auto max-h-[80vh] object-contain mx-auto"
+          referrerpolicy="no-referrer"
+        />
+        <div class="mt-3 flex items-center justify-between gap-3 text-xs text-stone-400">
+          <span>{menuBoards[boardLightbox].label}</span>
+          <a
+            href={menuListUrl(activePlaceMenu?.placeId || BRANCHES[0].placeId)}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-[#03C75A] font-semibold hover:underline"
+          >
+            네이버 메뉴판 페이지 →
+          </a>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="absolute right-2 sm:right-6 text-[#d4af37] text-3xl min-w-[44px] min-h-[44px]"
+        on:click|stopPropagation={() => shiftBoard(1)}
+        aria-label="다음 메뉴판"
+      >
+        ›
+      </button>
+    </div>
+  {/if}
 
   <div class="px-4 sm:px-6 my-1" aria-hidden="true">
     <div class="curve-divider">
