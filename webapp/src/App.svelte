@@ -659,6 +659,11 @@
         <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 맛과 멋이 공존하는 곳, 다이닝도안
 
+
+
+
+        </p>
+        <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 저희 다이닝도안의 도안은
 아들 이름의 “도” 딸 이름의 “안”을 합쳐 만든 소중한 이름 입니다.
 
@@ -674,11 +679,6 @@
 
 한 번 먹고 끝나는 곳보다
 다시 생각나는 곳이 되고 싶습니다.
-
-
-        </p>
-        <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
-
         </p>
         <div class="pt-2 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-x-6 sm:gap-y-2 text-stone-300 text-xs">
           <div>✓ 국내산 한우만 취급 (당일 손질)</div>
