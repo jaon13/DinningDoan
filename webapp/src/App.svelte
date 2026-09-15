@@ -272,6 +272,11 @@
       </div>
       <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/55 to-black/45"></div>
       <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/12 via-transparent to-transparent"></div>
+      <!-- Curve accent fragment (site language; Three.js stays secondary) -->
+      <svg class="curve-accent curve-accent--hero" viewBox="0 0 320 120" fill="none" aria-hidden="true">
+        <path d="M8 88 C 70 18, 150 8, 220 42 C 270 66, 300 78, 312 72" stroke="currentColor" stroke-width="1.25" />
+        <path d="M28 102 C 90 42, 170 28, 240 58 C 280 76, 300 88, 312 96" stroke="currentColor" stroke-width="0.75" opacity="0.55" />
+      </svg>
     </div>
 
     {#await HeroAtmosphere then Atmosphere}
@@ -351,11 +356,23 @@
     </div>
   </section>
 
+  <div class="px-4 sm:px-6 -mt-2 mb-2" aria-hidden="true">
+    <div class="curve-divider">
+      <svg viewBox="0 0 480 40" fill="none" preserveAspectRatio="none">
+        <path d="M0 28 C 80 8, 160 4, 240 18 C 320 32, 400 34, 480 14" stroke="currentColor" stroke-width="1.2" />
+      </svg>
+    </div>
+  </div>
+
   <!-- 3. Brand Story Section -->
   <section id="story" class="py-16 sm:py-20 md:py-24 px-4 sm:px-6 max-w-5xl mx-auto">
     <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
       <div class="relative reveal">
-        <div class="aspect-[4/3] rounded-lg overflow-hidden border border-[#d4af37]/30 shadow-2xl">
+        <svg class="curve-accent curve-accent--story" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+          <path d="M10 90 A 55 55 0 0 1 100 40" stroke="currentColor" stroke-width="1.2" />
+          <path d="M22 98 A 48 48 0 0 1 98 52" stroke="currentColor" stroke-width="0.7" opacity="0.5" />
+        </svg>
+        <div class="curve-media aspect-[4/3] border border-[#d4af37]/30 shadow-2xl">
           <!-- Real Original Dish Photo -->
           <img src="/place_myeongji_05.jpg" alt="도안사시미 실물 원본 (네이버 플레이스 명지)" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
         </div>
@@ -366,7 +383,11 @@
         <h2 class="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-white leading-tight">
           "타협하지 않는 원물 선별,<br />시간이 빚어낸 녹진한 감칠맛"
         </h2>
-        <div class="w-12 h-[2px] bg-[#d4af37]"></div>
+        <div class="curve-rule" aria-hidden="true">
+          <svg viewBox="0 0 72 12" fill="none">
+            <path d="M2 9 C 18 2, 36 2, 54 7 C 60 9, 66 10, 70 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </div>
         <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
           도안은 매일 새벽 부산 자갈치와 산지에서 직송되는 최상급 어종만을 사용합니다. 
           생선마다 다른 지방 분포도에 맞추어 저온 다시마 숙성과 볏짚 훈연을 거쳐, 생선 고유의 차진 식감과 감칠맛을 가장 완벽한 온도에서 대접합니다.
@@ -383,8 +404,18 @@
     </div>
   </section>
 
+  <div class="px-4 sm:px-6 my-1" aria-hidden="true">
+    <div class="curve-divider">
+      <svg viewBox="0 0 480 40" fill="none" preserveAspectRatio="none">
+        <path d="M0 28 C 80 8, 160 4, 240 18 C 320 32, 400 34, 480 14" stroke="currentColor" stroke-width="1.2" />
+      </svg>
+    </div>
+  </div>
+
   <!-- 4. Interactive Menu Showcase -->
-  <section id="menu" class="py-16 sm:py-20 md:py-24 bg-[#16161a] border-y border-[#d4af37]/15">
+  <section id="menu" class="py-16 sm:py-20 md:py-24 bg-[#16161a] relative overflow-hidden">
+    <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/25 to-transparent" aria-hidden="true"></div>
+    <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/25 to-transparent" aria-hidden="true"></div>
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12 reveal">
         <span class="text-xs uppercase tracking-[0.25em] text-[#d4af37] font-semibold block mb-2">Artisanal Dining Menu</span>
@@ -409,9 +440,9 @@
         {#each filteredDishes as dish (dish.id)}
           <div
             use:tilt
-            class="tilt-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col"
+            class="tilt-card curve-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col"
           >
-            <div class="aspect-[16/10] overflow-hidden relative">
+            <div class="curve-card-media aspect-[16/10] overflow-hidden relative">
               <img src={dish.image} alt={dish.name} class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
               <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-1">
                 {#each dish.tags as tag}
@@ -450,6 +481,14 @@
     </div>
   </section>
 
+  <div class="px-4 sm:px-6 my-1" aria-hidden="true">
+    <div class="curve-divider">
+      <svg viewBox="0 0 480 40" fill="none" preserveAspectRatio="none">
+        <path d="M0 28 C 80 8, 160 4, 240 18 C 320 32, 400 34, 480 14" stroke="currentColor" stroke-width="1.2" />
+      </svg>
+    </div>
+  </div>
+
   <!-- 5. Branches & Reservation Section (하단본점 + 명지직영점 2개 지점 분기) -->
   <section id="locations" class="py-16 sm:py-20 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
     <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12 reveal">
@@ -463,7 +502,7 @@
     <!-- Branch Selection Cards -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8">
       {#each BRANCHES as branch}
-        <div class="loc-glow reveal bg-[#1a1a1e] border border-[#d4af37]/25 hover:border-[#d4af37] rounded-2xl p-5 sm:p-8 shadow-2xl transition-all duration-300 flex flex-col justify-between">
+        <div class="loc-glow reveal bg-[#1a1a1e] border border-[#d4af37]/25 hover:border-[#d4af37] p-5 sm:p-8 shadow-2xl transition-all duration-300 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-4 gap-2">
               <div class="flex items-center gap-2">
@@ -549,7 +588,10 @@
   </section>
 
   <!-- 6. Footer -->
-  <footer class="border-t border-stone-800/80 bg-[#0e0e11] py-10 sm:py-12 px-4 sm:px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+  <footer class="relative border-t border-stone-800/80 bg-[#0e0e11] py-10 sm:py-12 px-4 sm:px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+    <svg class="curve-accent curve-accent--footer" viewBox="0 0 320 40" fill="none" aria-hidden="true">
+      <path d="M0 28 C 70 8, 140 6, 160 18 C 180 30, 250 32, 320 12" stroke="currentColor" stroke-width="1.1" />
+    </svg>
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-xs text-stone-500">
       <div class="flex items-start sm:items-center gap-3">
         <img src="/logo_profile.png" alt="다이닝도안" class="w-8 h-8 rounded-full border border-stone-700 shrink-0" />

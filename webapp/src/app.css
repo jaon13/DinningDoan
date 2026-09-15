@@ -5,6 +5,13 @@
   --font-serif: 'Noto Serif KR', serif;
   --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
   --scroll-progress: 0;
+  /* Concept B — site-wide curve language */
+  --curve-sm: 0.75rem;
+  --curve-md: 1.35rem;
+  --curve-lg: 2.25rem;
+  --curve-arc: ellipse(120% 70% at 50% 100%);
+  --curve-stroke: rgba(212, 175, 55, 0.35);
+  --curve-stroke-soft: rgba(212, 175, 55, 0.16);
 }
 
 html {
@@ -117,6 +124,7 @@ body {
 /* Location card: static thin gold corner accent (no pulse) */
 .loc-glow {
   position: relative;
+  border-radius: var(--curve-lg) var(--curve-sm) var(--curve-lg) var(--curve-md);
 }
 .loc-glow::before {
   content: '';
@@ -127,6 +135,74 @@ body {
   height: 2.25rem;
   background: linear-gradient(to bottom, #d4af37, transparent);
   opacity: 0.7;
+}
+
+/* —— Curve system (Concept B primary language) —— */
+.curve-divider {
+  display: block;
+  width: min(100%, 42rem);
+  height: 2.5rem;
+  margin: 0 auto;
+  color: var(--curve-stroke);
+  overflow: visible;
+}
+.curve-divider svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.curve-accent {
+  position: absolute;
+  pointer-events: none;
+  color: var(--curve-stroke-soft);
+  overflow: visible;
+  z-index: 1;
+}
+.curve-accent--hero {
+  width: min(52vw, 28rem);
+  height: 9rem;
+  right: -4%;
+  bottom: 18%;
+  opacity: 0.85;
+}
+.curve-accent--story {
+  width: 10rem;
+  height: 10rem;
+  left: -1.25rem;
+  top: -1.5rem;
+  opacity: 0.9;
+}
+.curve-accent--footer {
+  width: min(70%, 22rem);
+  height: 3.5rem;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -55%);
+  opacity: 0.75;
+}
+
+.curve-media {
+  border-radius: var(--curve-md) var(--curve-lg) var(--curve-sm) var(--curve-lg);
+  overflow: hidden;
+}
+
+.tilt-card.curve-card {
+  border-radius: var(--curve-md) var(--curve-sm) var(--curve-lg) var(--curve-md);
+}
+.tilt-card.curve-card .curve-card-media {
+  border-radius: var(--curve-md) var(--curve-sm) 0 0;
+}
+
+.curve-rule {
+  width: 4.5rem;
+  height: 0.7rem;
+  color: #d4af37;
+}
+.curve-rule svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 @media (max-width: 767px) {
@@ -143,6 +219,17 @@ body {
   }
   .loc-glow::before {
     display: none;
+  }
+  .curve-accent--hero {
+    opacity: 0.45;
+    width: min(70vw, 18rem);
+    height: 5.5rem;
+    bottom: 22%;
+  }
+  .curve-accent--story {
+    width: 6.5rem;
+    height: 6.5rem;
+    opacity: 0.55;
   }
   .scroll-progress {
     height: 1px;

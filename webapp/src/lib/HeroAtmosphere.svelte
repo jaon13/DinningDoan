@@ -168,7 +168,7 @@
       const view = window.innerHeight || 1;
       scrollT = Math.min(Math.max(-rect.top / (rect.height * 0.85), 0), 1);
       // Fade fixture as user leaves hero
-      container.style.opacity = String(0.95 * (1 - scrollT * 0.85));
+      container.style.opacity = String(0.55 * (1 - scrollT * 0.85));
     };
 
     const io = new IntersectionObserver(
@@ -237,6 +237,6 @@
 <div
   bind:this={container}
   class="pointer-events-none absolute inset-0 z-[2] hidden lg:block"
-  style="opacity: 0.95; mix-blend-mode: screen;"
+  style="opacity: 0.55; mix-blend-mode: screen;"
   aria-hidden="true"
 ></div>
