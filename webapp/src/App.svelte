@@ -1097,8 +1097,8 @@
         <img src="./logo_profile.jpg" alt="다이닝도안" class="w-8 h-8 rounded-full border border-stone-700 shrink-0 object-cover bg-[#121215]" />
         <div class="min-w-0">
           <span class="font-serif text-sm font-bold text-stone-300 block">다이닝도안 (Dining Doan)</span>
-          <span class="block mt-1 leading-relaxed">하단본점: 부산 사하구 낙동남로1423번길 139</span>
-          <span class="block leading-relaxed">명지직영점: 부산 강서구 명지국제2로28번길 7</span>
+          <span class="block mt-1 leading-relaxed">하단본점: 사하구 낙동남로1423번길 139</span>
+          <span class="block leading-relaxed">명지직영점: 강서구 명지국제2로 28번길 7 103호 7</span>
         </div>
       </div>
 
