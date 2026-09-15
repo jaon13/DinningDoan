@@ -5,12 +5,15 @@
 
   const HeroAtmosphere = import('./lib/HeroAtmosphere.svelte').then((m) => m.default);
 
+  const INSTAGRAM_URL = 'https://www.instagram.com/dining.doan/';
+
   // Navigation Links
   const NAV_LINKS = [
     { name: '브랜드 스토리', href: '#story' },
     { name: '시그니처 메뉴', href: '#menu' },
     { name: '지점 안내 & 예약', href: '#locations' },
     { name: '공식 블로그', href: 'https://blog.naver.com', external: true },
+    { name: '인스타그램', href: INSTAGRAM_URL, external: true },
   ];
 
   // Branches Data (하단본점 & 명지직영점)
@@ -186,7 +189,7 @@
   <header class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || menuOpen ? 'bg-[#1a1a1e]/95 backdrop-blur-md border-b border-[#d4af37]/20 py-3 shadow-2xl' : 'bg-transparent py-4 sm:py-5'}`}>
     <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
       <a href="#top" class="flex items-center gap-2 sm:gap-3 group min-w-0" on:click={closeMenu}>
-        <img src="/logo_profile.png" alt="다이닝도안 로고" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#d4af37]/60 group-hover:scale-105 transition-transform shrink-0" />
+        <img src="/logo_profile.jpg" alt="다이닝도안 로고" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#d4af37]/40 group-hover:scale-105 transition-transform shrink-0 object-cover bg-[#121215]" />
         <div class="min-w-0">
           <span class="font-serif text-lg sm:text-xl font-bold tracking-wider text-[#d4af37]">다이닝도안</span>
           <span class="hidden xl:inline-block text-[10px] tracking-[0.25em] text-stone-400 ml-2 uppercase">Dining Doan</span>
@@ -198,7 +201,8 @@
         {#each NAV_LINKS as link}
           <a 
             href={link.href} 
-            target={link.external ? '_blank' : '_self'}
+            target={link.external ? '_blank' : undefined}
+            rel={link.external ? 'noopener noreferrer' : undefined}
             class="text-sm font-medium tracking-wider text-stone-300 hover:text-[#d4af37] transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-[#d4af37] hover:after:w-full after:transition-all"
           >
             {link.name}
@@ -240,7 +244,8 @@
           {#each NAV_LINKS as link}
             <a
               href={link.href}
-              target={link.external ? '_blank' : '_self'}
+              target={link.external ? '_blank' : undefined}
+              rel={link.external ? 'noopener noreferrer' : undefined}
               on:click={closeMenu}
               class="py-3.5 text-sm font-medium tracking-wider text-stone-200 border-b border-stone-800/80 last:border-0 hover:text-[#d4af37] transition-colors"
             >
@@ -565,6 +570,21 @@
       </div>
       <h2 class="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-white">매장 안내 및 네이버 실시간 예약</h2>
       <p class="text-stone-400 text-sm mt-3">방문하시고자 하는 지점을 선택하시면 해당 매장의 네이버 예약 및 지도 길찾기로 즉시 연결됩니다.</p>
+      <p class="mt-4">
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-stone-500 hover:text-[#d4af37] transition-colors min-h-[44px]"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none" />
+          </svg>
+          <span>Instagram · @dining.doan</span>
+        </a>
+      </p>
     </div>
 
     <!-- Branch Selection Cards -->
@@ -662,7 +682,7 @@
     </svg>
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-xs text-stone-500">
       <div class="flex items-start sm:items-center gap-3">
-        <img src="/logo_profile.png" alt="다이닝도안" class="w-8 h-8 rounded-full border border-stone-700 shrink-0" />
+        <img src="/logo_profile.jpg" alt="다이닝도안" class="w-8 h-8 rounded-full border border-stone-700 shrink-0 object-cover bg-[#121215]" />
         <div class="min-w-0">
           <span class="font-serif text-sm font-bold text-stone-300 block">다이닝도안 (Dining Doan)</span>
           <span class="block mt-1 leading-relaxed">하단본점: 부산 사하구 낙동남로1423번길 139</span>
@@ -672,7 +692,14 @@
 
       <div class="flex flex-wrap items-center gap-4 sm:gap-6">
         <a href="https://blog.naver.com" target="_blank" rel="noopener noreferrer" class="hover:text-[#03C75A] transition-colors min-h-[44px] inline-flex items-center">공식 네이버 블로그</a>
-        <a href="https://www.instagram.com/dining_doan" target="_blank" rel="noopener noreferrer" class="hover:text-[#d4af37] transition-colors min-h-[44px] inline-flex items-center">인스타그램</a>
+        <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" class="hover:text-[#d4af37] transition-colors min-h-[44px] inline-flex items-center gap-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none" />
+          </svg>
+          Instagram
+        </a>
       </div>
     </div>
     <div class="text-center text-[11px] text-stone-600 mt-8">
