@@ -15,14 +15,17 @@
 ## 📁 디렉터리 구조
 ```text
 다이닝도안/
+├── webapp/                          # 실시간 웹 애플리케이션 (Svelte 5 + Tailwind)
+│   ├── src/                         # 앱 소스코드 (하단본점 & 명지직영점 네이버 예약 연동)
+│   └── public/                      # 1920px+ 고화질 네이버 실물 원본 사진 에셋
 ├── naver_blog_final_package/        # 실제 네이버 블로그 즉시 적용 최종 패키지
 │   ├── 실제_네이버블로그_적용_매뉴얼.md   # 위젯 코드 & 세팅 완벽 실전 가이드
-│   └── images/                     # 와이드 스킨 배너, 투명 위젯 PNG, 프로필 로고 등
+│   └── images/                      # 와이드 스킨 배너, 투명 위젯 PNG, 프로필 로고 등
+├── tistory_skin/                    # 자유 CSS 지원 티스토리 전용 반응형 스킨
+│   ├── skin.html, style.css         # 티스토리 풀 커스텀 코드
+│   └── 티스토리_적용_가이드.md        # 티스토리 스킨 업로드 매뉴얼
 ├── stitch_preview/                  # Stitch 생성 고해상도 블로그 UI 프로토타입 (HTML)
-│   ├── blog_home.html              # PC 와이드 스킨 & 2x2 프롤로그 매거진 홈
-│   └── blog_post.html              # 스마트에디터 ONE 스타일 상세 포스팅 뷰
-├── naver_blog_assets/               # 다운로드된 원본 그래픽 에셋
-└── naver_blog_actual_guide.md       # 본문 원고 복사/붙여넣기 템플릿
+└── naver_blog_actual_guide.md       # 블로그 본문 원고 복사/붙여넣기 템플릿
 ```
 
 ---
