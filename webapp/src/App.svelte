@@ -590,24 +590,25 @@
 
           <div class="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-none">
             {#each menuBoards as board, i (board.id)}
-              <button
-                type="button"
+              <!-- div+role (not <button>): absolute img fill inside <button> is unreliable across engines -->
+              <div
+                role="button"
+                tabindex="0"
                 on:click={() => openBoard(i)}
-                class="snap-start shrink-0 w-[42vw] sm:w-44 md:w-52 aspect-[3/4] relative overflow-hidden border border-stone-800/80 hover:border-[#d4af37]/50 transition-colors group bg-[#121215] p-0"
+                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), openBoard(i))}
+                class="snap-start shrink-0 w-[42vw] sm:w-44 md:w-52 aspect-[3/4] relative overflow-hidden border border-stone-800/80 hover:border-[#d4af37]/50 transition-colors group bg-[#121215] cursor-pointer"
               >
-                <!-- absolute fill: % height on img inside <button> collapses to 0 in several engines -->
                 <img
                   src={board.imageUrl}
                   alt={board.label}
-                  class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.03] transition-transform duration-500"
-                  referrerpolicy="no-referrer"
-                  loading="lazy"
+                  class="absolute inset-0 block w-full h-full object-cover object-top group-hover:scale-[1.03] transition-transform duration-500"
+                  loading="eager"
                   decoding="async"
                 />
-                <span class="absolute bottom-0 inset-x-0 z-[1] py-2 px-2 text-[10px] tracking-wider text-stone-300 bg-gradient-to-t from-black/80 to-transparent">
+                <span class="absolute bottom-0 inset-x-0 z-[1] py-2 px-2 text-[10px] tracking-wider text-stone-300 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
                   {board.label}
                 </span>
-              </button>
+              </div>
             {/each}
           </div>
         </div>
@@ -650,7 +651,7 @@
           src={menuBoards[boardLightbox].imageUrl}
           alt={menuBoards[boardLightbox].label}
           class="w-full h-auto max-h-[80vh] object-contain mx-auto"
-          referrerpolicy="no-referrer"
+          decoding="async"
         />
         <div class="mt-3 flex items-center justify-between gap-3 text-xs text-stone-400">
           <span>{menuBoards[boardLightbox].label}</span>
