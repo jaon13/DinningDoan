@@ -71,7 +71,7 @@
       price: '48,000원',
       desc: '다이닝도안 대표 시그니처. 매일 새벽 산지 직송 최상급 어종만을 엄선하여 24시간 저온 숙성으로 찰기와 감칠맛을 극대화한 네이버 플레이스 실물 원본.',
       tags: ['대표시그니처', '네이버실물원본', '저온숙성'],
-      image: '/sashimi_platter.jpg',
+      image: '/place_myeongji_05.jpg',
       pairing: '문경바람 오크 40°'
     },
     {
@@ -81,7 +81,7 @@
       price: '38,000원',
       desc: '당일 도축 최상급 1++ 한우 차돌박이만을 엄선. 특제 마늘 기름장과 생와사비의 극상 마리아주.',
       tags: ['주문1위', '한우투뿔', '한정수량'],
-      image: '/sashimi_signature.png',
+      image: '/place_myeongji_02.jpg',
       pairing: '화요 25°'
     },
     {
@@ -91,7 +91,7 @@
       price: '분위기 맛집',
       desc: '은은한 황동 핀조명 아래 셰프의 조리 과정을 바로 눈앞에서 즐길 수 있는 도안만의 시그니처 카운터석.',
       tags: ['실물인테리어', '데이트추천', '감성공간'],
-      image: '/bar_counter.jpg',
+      image: '/place_hadan_01.jpg',
       pairing: '하이볼 / 전통주'
     },
     {
@@ -101,7 +101,7 @@
       price: '예약 필수',
       desc: '블랙 & 브라스 톤의 고급스러운 인테리어와 편안한 좌석 배치로 비즈니스 미팅과 소중한 기념일에 최적화.',
       tags: ['매장실물', '단체예약', '단독좌석'],
-      image: '/table_seat.jpg',
+      image: '/place_hadan_04.jpg',
       pairing: '프리미엄 페어링'
     },
     {
@@ -111,7 +111,7 @@
       price: '55,000원',
       desc: '문경 사과 증류 원액을 프렌치 오크통에서 숙성. 카빙 아이스볼 크리스털 잔과 함께 제공.',
       tags: ['프리미엄', '오크숙성', '사과증류주'],
-      image: '/pairing_liquor.png',
+      image: '/place_myeongji_01.jpg',
       pairing: '숙성 사시미 추천'
     }
   ];
@@ -268,7 +268,7 @@
     <!-- Ambient Background with Overlay -->
     <div class="absolute inset-0 z-0 overflow-hidden">
       <div bind:this={heroMedia} class="hero-media absolute inset-[-4%] will-change-transform">
-        <img src="/bar_counter.jpg" alt="다이닝도안 매장 바 카운터 실물 원본" class="w-full h-full object-cover object-center filter brightness-[0.62] contrast-110" />
+        <img src="/place_hadan_01.jpg" alt="다이닝도안 하단본점 바 카운터 (네이버 플레이스)" class="w-full h-full object-cover object-center filter brightness-[0.62] contrast-110" />
       </div>
       <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/55 to-black/45"></div>
       <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/12 via-transparent to-transparent"></div>
@@ -357,7 +357,7 @@
       <div class="relative reveal">
         <div class="aspect-[4/3] rounded-lg overflow-hidden border border-[#d4af37]/30 shadow-2xl">
           <!-- Real Original Dish Photo -->
-          <img src="/sashimi_platter.jpg" alt="도안사시미 실물 원본 사진 (1920px+ 네이버 원본)" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+          <img src="/place_myeongji_05.jpg" alt="도안사시미 실물 원본 (네이버 플레이스 명지)" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
         </div>
       </div>
 
