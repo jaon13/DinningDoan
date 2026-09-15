@@ -437,54 +437,73 @@
         황동빛 아래 고요히 열리는 밤의 식탁.
       </p>
 
-      <div class="hero-enter hero-enter-delay-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full max-w-md sm:max-w-none mx-auto">
+      <!-- Desktop/tablet: CTAs stay centered under hero copy -->
+      <div class="hero-enter hero-enter-delay-3 hidden sm:flex flex-row items-center justify-center gap-4 w-full mx-auto">
         <a 
           href="#locations" 
-          class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-md bg-[#d4af37] hover:bg-[#c6923c] text-[#121215] font-bold text-sm md:text-base tracking-wider transition-all duration-200 shadow-xl shadow-[#d4af37]/20 flex items-center justify-center gap-3"
+          class="w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-md bg-[#d4af37] hover:bg-[#c6923c] text-[#121215] font-bold text-sm md:text-base tracking-wider transition-all duration-200 shadow-xl shadow-[#d4af37]/20 flex items-center justify-center gap-3"
         >
           <span>지점 선택 후 바로 예약하기</span>
           <span class="text-lg font-mono">↓</span>
         </a>
         <a 
           href="#menu" 
-          class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-md bg-[#1a1a1e]/80 hover:bg-[#2a2a30] text-[#f5f5f7] border border-[#d4af37]/30 text-sm md:text-base font-medium tracking-wider transition-colors backdrop-blur-sm text-center"
+          class="w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-md bg-[#1a1a1e]/80 hover:bg-[#2a2a30] text-[#f5f5f7] border border-[#d4af37]/30 text-sm md:text-base font-medium tracking-wider transition-colors backdrop-blur-sm text-center"
         >
           시그니처 메뉴 살펴보기
         </a>
       </div>
     </div>
 
-    <!-- Quick Info Pill Bar at bottom of Hero -->
-    <div class="hero-enter hero-enter-delay-4 absolute bottom-4 sm:bottom-6 left-0 right-0 z-10 px-4 sm:px-6">
-      <div class="max-w-4xl mx-auto bg-[#1a1a1e]/85 border border-[#d4af37]/20 rounded-xl py-3 px-4 sm:px-6 backdrop-blur-md flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-around gap-2.5 sm:gap-4 text-xs sm:text-sm text-stone-300">
-        <div class="flex items-center gap-2">
-          <span
-            class={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] sm:text-xs font-bold tracking-wider ${
-              siteStatus.open
-                ? 'bg-[#03C75A]/15 border-[#03C75A]/40 text-[#03C75A]'
-                : 'bg-stone-800/80 border-stone-600 text-stone-300'
-            }`}
+    <!-- Bottom stack: mobile CTAs sit directly above OPEN / hours pill -->
+    <div class="absolute bottom-4 sm:bottom-6 left-0 right-0 z-10 px-4 sm:px-6">
+      <div class="max-w-4xl mx-auto flex flex-col gap-3">
+        <div class="hero-enter hero-enter-delay-3 flex sm:hidden flex-col items-stretch gap-3 w-full max-w-md mx-auto">
+          <a 
+            href="#locations" 
+            class="w-full px-6 py-3.5 rounded-md bg-[#d4af37] hover:bg-[#c6923c] text-[#121215] font-bold text-sm tracking-wider transition-all duration-200 shadow-xl shadow-[#d4af37]/20 flex items-center justify-center gap-3"
           >
-            <span class={`w-1.5 h-1.5 rounded-full ${siteStatus.open ? 'bg-[#03C75A]' : 'bg-stone-500'}`}></span>
-            {siteStatus.en}
-            <span class="font-medium opacity-80">· {siteStatus.ko}</span>
-          </span>
+            <span>지점 선택 후 바로 예약하기</span>
+            <span class="text-lg font-mono">↓</span>
+          </a>
+          <a 
+            href="#menu" 
+            class="w-full px-6 py-3.5 rounded-md bg-[#1a1a1e]/80 hover:bg-[#2a2a30] text-[#f5f5f7] border border-[#d4af37]/30 text-sm font-medium tracking-wider transition-colors backdrop-blur-sm text-center"
+          >
+            시그니처 메뉴 살펴보기
+          </a>
         </div>
-        <div class="hidden sm:inline w-[1px] h-3 bg-stone-700"></div>
-        <div class="flex items-center gap-2">
-          <span class="text-[#d4af37]" aria-hidden="true">●</span>
-          <span>하단본점 (사하구 낙동남로)</span>
-          <span class={`text-[10px] font-bold ${branchStatuses.hadan.open ? 'text-[#03C75A]' : 'text-stone-500'}`}>
-            {branchStatuses.hadan.en}
-          </span>
-        </div>
-        <div class="hidden sm:inline w-[1px] h-3 bg-stone-700"></div>
-        <div class="flex items-center gap-2">
-          <span class="text-[#d4af37]" aria-hidden="true">●</span>
-          <span>명지직영점 (강서구 명지국제2로)</span>
-          <span class={`text-[10px] font-bold ${branchStatuses.myeongji.open ? 'text-[#03C75A]' : 'text-stone-500'}`}>
-            {branchStatuses.myeongji.en}
-          </span>
+
+        <div class="hero-enter hero-enter-delay-4 bg-[#1a1a1e]/85 border border-[#d4af37]/20 rounded-xl py-3 px-4 sm:px-6 backdrop-blur-md flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-around gap-2.5 sm:gap-4 text-xs sm:text-sm text-stone-300">
+          <div class="flex items-center gap-2">
+            <span
+              class={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] sm:text-xs font-bold tracking-wider ${
+                siteStatus.open
+                  ? 'bg-[#03C75A]/15 border-[#03C75A]/40 text-[#03C75A]'
+                  : 'bg-stone-800/80 border-stone-600 text-stone-300'
+              }`}
+            >
+              <span class={`w-1.5 h-1.5 rounded-full ${siteStatus.open ? 'bg-[#03C75A]' : 'bg-stone-500'}`}></span>
+              {siteStatus.en}
+              <span class="font-medium opacity-80">· {siteStatus.ko}</span>
+            </span>
+          </div>
+          <div class="hidden sm:inline w-[1px] h-3 bg-stone-700"></div>
+          <div class="flex items-center gap-2">
+            <span class="text-[#d4af37]" aria-hidden="true">●</span>
+            <span>하단본점 (사하구 낙동남로)</span>
+            <span class={`text-[10px] font-bold ${branchStatuses.hadan.open ? 'text-[#03C75A]' : 'text-stone-500'}`}>
+              {branchStatuses.hadan.en}
+            </span>
+          </div>
+          <div class="hidden sm:inline w-[1px] h-3 bg-stone-700"></div>
+          <div class="flex items-center gap-2">
+            <span class="text-[#d4af37]" aria-hidden="true">●</span>
+            <span>명지직영점 (강서구 명지국제2로)</span>
+            <span class={`text-[10px] font-bold ${branchStatuses.myeongji.open ? 'text-[#03C75A]' : 'text-stone-500'}`}>
+              {branchStatuses.myeongji.en}
+            </span>
+          </div>
         </div>
       </div>
     </div>
