@@ -86,27 +86,14 @@
   /** @type {Record<string, any>} */
   let placeMenus = {};
   let menuLoadError = '';
-  let boardLightbox = -1;
 
   $: activePlaceMenu = placeMenus[activeMenuPlace] || null;
   $: dishes = activePlaceMenu?.dishes || [];
-  $: menuBoards = activePlaceMenu?.menuBoards || [];
   $: filteredDishes =
     activeCategory === '전체' ? dishes : dishes.filter((d) => d.category === activeCategory);
 
   function dishImage(dish) {
     return dish?.image || PLACE_IMG.fallbackDish;
-  }
-
-  function openBoard(i) {
-    boardLightbox = i;
-  }
-  function closeBoard() {
-    boardLightbox = -1;
-  }
-  function shiftBoard(delta) {
-    if (!menuBoards.length) return;
-    boardLightbox = (boardLightbox + delta + menuBoards.length) % menuBoards.length;
   }
 
   /** @type {HTMLElement} */
@@ -160,14 +147,6 @@
       nowTick = Date.now();
     }, 60_000);
 
-    const onKey = (e) => {
-      if (boardLightbox < 0) return;
-      if (e.key === 'Escape') closeBoard();
-      if (e.key === 'ArrowRight') shiftBoard(1);
-      if (e.key === 'ArrowLeft') shiftBoard(-1);
-    };
-    window.addEventListener('keydown', onKey);
-
     fetch('./place-menu.json')
       .then((r) => {
         if (!r.ok) throw new Error(`menu json ${r.status}`);
@@ -187,7 +166,6 @@
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('keydown', onKey);
       unbindProgress();
       unbindReveals();
       unbindParallax();
@@ -568,113 +546,8 @@
           </div>
         </div>
       </div>
-
-      <!-- Menu board gallery (메뉴판 이미지로 보기) -->
-      {#if menuBoards.length}
-        <div id="menu-boards" class="mt-14 sm:mt-16 reveal">
-          <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
-            <div>
-              <span class="text-[10px] uppercase tracking-[0.25em] text-[#d4af37] font-semibold block mb-1">Menu Boards</span>
-              <h3 class="font-serif text-xl sm:text-2xl text-white font-normal">메뉴판 이미지로 보기</h3>
-              <p class="text-stone-500 text-xs mt-1">네이버 플레이스에 등록된 메뉴판 {menuBoards.length}장 · 클릭하면 확대</p>
-            </div>
-            <a
-              href={menuListUrl(activePlaceMenu?.placeId || BRANCHES[0].placeId)}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-xs text-[#d4af37] hover:underline shrink-0"
-            >
-              네이버에서 메뉴판 열기 →
-            </a>
-          </div>
-
-          <div class="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-none">
-            {#each menuBoards as board, i (board.id)}
-              <!-- div+role (not <button>): absolute img fill inside <button> is unreliable across engines -->
-              <div
-                role="button"
-                tabindex="0"
-                on:click={() => openBoard(i)}
-                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), openBoard(i))}
-                class="snap-start shrink-0 w-[42vw] sm:w-44 md:w-52 aspect-[3/4] relative overflow-hidden border border-stone-800/80 hover:border-[#d4af37]/50 transition-colors group bg-[#121215] cursor-pointer"
-              >
-                <img
-                  src={board.imageUrl}
-                  alt={board.label}
-                  class="absolute inset-0 block w-full h-full object-cover object-top group-hover:scale-[1.03] transition-transform duration-500"
-                  loading="eager"
-                  decoding="async"
-                />
-                <span class="absolute bottom-0 inset-x-0 z-[1] py-2 px-2 text-[10px] tracking-wider text-stone-300 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
-                  {board.label}
-                </span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/if}
     </div>
   </section>
-
-  {#if boardLightbox >= 0 && menuBoards[boardLightbox]}
-    <div
-      class="fixed inset-0 z-[80] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-      role="dialog"
-      tabindex="-1"
-      aria-modal="true"
-      aria-label="메뉴판 확대"
-      on:click={closeBoard}
-      on:keydown={(e) => e.key === 'Escape' && closeBoard()}
-    >
-      <button
-        type="button"
-        class="absolute top-4 right-4 text-stone-300 hover:text-white text-sm min-h-[44px] px-3"
-        on:click|stopPropagation={closeBoard}
-      >
-        닫기 ✕
-      </button>
-      <button
-        type="button"
-        class="absolute left-2 sm:left-6 text-[#d4af37] text-3xl min-w-[44px] min-h-[44px]"
-        on:click|stopPropagation={() => shiftBoard(-1)}
-        aria-label="이전 메뉴판"
-      >
-        ‹
-      </button>
-      <div
-        class="max-w-3xl w-full max-h-[85vh]"
-        role="document"
-        on:click|stopPropagation
-        on:keydown|stopPropagation
-      >
-        <img
-          src={menuBoards[boardLightbox].imageUrl}
-          alt={menuBoards[boardLightbox].label}
-          class="w-full h-auto max-h-[80vh] object-contain mx-auto"
-          decoding="async"
-        />
-        <div class="mt-3 flex items-center justify-between gap-3 text-xs text-stone-400">
-          <span>{menuBoards[boardLightbox].label}</span>
-          <a
-            href={menuListUrl(activePlaceMenu?.placeId || BRANCHES[0].placeId)}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-[#03C75A] font-semibold hover:underline"
-          >
-            네이버 메뉴판 페이지 →
-          </a>
-        </div>
-      </div>
-      <button
-        type="button"
-        class="absolute right-2 sm:right-6 text-[#d4af37] text-3xl min-w-[44px] min-h-[44px]"
-        on:click|stopPropagation={() => shiftBoard(1)}
-        aria-label="다음 메뉴판"
-      >
-        ›
-      </button>
-    </div>
-  {/if}
 
   <div class="px-4 sm:px-6 my-1" aria-hidden="true">
     <div class="curve-divider">
