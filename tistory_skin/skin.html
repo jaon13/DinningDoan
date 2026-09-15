@@ -17,12 +17,16 @@
         </a>
         <ul class="doan-nav-menu">
           <li><a href="[##_blog_url_##]/category/시그니처메뉴">시그니처 메뉴</a></li>
-          <li><a href="https://m.place.naver.com/restaurant/1059460378/location" target="_blank">오시는 길</a></li>
+          <li><a href="#locations">지점 안내</a></li>
           <li><a href="https://www.instagram.com/dining_doan" target="_blank">인스타그램</a></li>
-          <li><a href="tel:050713366161">전화문의</a></li>
           <li>
-            <a href="https://m.place.naver.com/restaurant/1059460378/booking" target="_blank" class="btn-naver-booking">
-              [N] 실시간 네이버 예약
+            <a href="https://m.place.naver.com/restaurant/1059460378/booking" target="_blank" class="btn-naver-booking" title="하단본점 네이버 예약">
+              [N] 하단본점 예약
+            </a>
+          </li>
+          <li>
+            <a href="https://m.place.naver.com/restaurant/1688679679/booking" target="_blank" class="btn-naver-booking" style="background-color: var(--primary-gold); color: #121215;" title="명지직영점 네이버 예약">
+              [N] 명지직영점 예약
             </a>
           </li>
         </ul>
@@ -43,8 +47,8 @@
           <span class="quick-val">월~토 17:30 - 01:00</span>
         </div>
         <div class="quick-item">
-          <span class="quick-label">Location</span>
-          <span class="quick-val">부산 사하구 하단본점</span>
+          <span class="quick-label">Locations</span>
+          <span class="quick-val">하단본점 & 명지직영점</span>
         </div>
         <div class="quick-item">
           <span class="quick-label">Signature</span>
@@ -71,26 +75,58 @@
           <div class="article-content">
             [##_article_rep_desc_##]
 
-            <!-- 네이버 예약 및 지도 연동 박스 (모든 글 하단 자동 삽입) -->
-            <div class="naver-place-box">
+            <!-- 네이버 예약 및 지도 연동 박스 (모든 글 하단 자동 삽입: 하단본점 + 명지직영점) -->
+            <div class="naver-place-box" id="locations">
               <div class="place-title">
-                📍 다이닝도안 하단본점 안내 및 네이버 예약
+                📍 다이닝도안 전 지점 안내 & 네이버 실시간 예약
               </div>
-              <div class="place-details">
-                <div><strong>주소:</strong> 부산광역시 사하구 낙동남로1423번길 139 1층 (하단역 도보 3분)</div>
-                <div><strong>영업시간:</strong> 17:30 - 01:00 (라스트오더 00:00 / 매주 일요일 정기휴무)</div>
-                <div><strong>주차:</strong> 매장 전용 타워 주차 2시간 무료 지원</div>
+              
+              <!-- 지점 1: 하단본점 -->
+              <div style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px dashed var(--border-gold);">
+                <div style="font-size: 17px; font-weight: 700; color: var(--primary-gold); margin-bottom: 8px;">
+                  [1호점] 다이닝도안 하단본점
+                </div>
+                <div class="place-details">
+                  <div><strong>주소:</strong> 부산광역시 사하구 낙동남로1423번길 139 1층 (하단역 1번 출구 도보 3분)</div>
+                  <div><strong>영업시간:</strong> 17:30 - 01:00 (라스트오더 00:00 / 매주 일요일 정기휴무)</div>
+                  <div><strong>전화문의:</strong> <a href="tel:050713366161">0507-1336-6161</a></div>
+                  <div><strong>주차:</strong> 매장 전용 타워 주차 2시간 무료 지원</div>
+                </div>
+                <div class="place-buttons">
+                  <a href="https://m.place.naver.com/restaurant/1059460378/booking" target="_blank" class="btn-naver-link">
+                    [N] 하단본점 네이버 예약
+                  </a>
+                  <a href="https://m.place.naver.com/restaurant/1059460378/location" target="_blank" class="btn-call-link">
+                    하단본점 길찾기
+                  </a>
+                  <a href="https://m.place.naver.com/restaurant/1059460378/menu" target="_blank" class="btn-call-link">
+                    하단본점 메뉴판
+                  </a>
+                </div>
               </div>
-              <div class="place-buttons">
-                <a href="https://m.place.naver.com/restaurant/1059460378/booking" target="_blank" class="btn-naver-link">
-                  [N] 네이버 실시간 예약하기
-                </a>
-                <a href="https://m.place.naver.com/restaurant/1059460378/location" target="_blank" class="btn-call-link">
-                  네이버 지도 길찾기
-                </a>
-                <a href="tel:050713366161" class="btn-call-link">
-                  전화 문의
-                </a>
+
+              <!-- 지점 2: 명지직영점 -->
+              <div>
+                <div style="font-size: 17px; font-weight: 700; color: var(--primary-gold); margin-bottom: 8px;">
+                  [2호점] 다이닝도안 명지직영점
+                </div>
+                <div class="place-details">
+                  <div><strong>주소:</strong> 부산광역시 강서구 명지국제2로28번길 7 (명지국제신도시)</div>
+                  <div><strong>영업시간:</strong> 17:30 - 01:00 (라스트오더 00:00 / 일요일 정상영업)</div>
+                  <div><strong>전화문의:</strong> <a href="tel:01036679386">010-3667-9386</a></div>
+                  <div><strong>주차:</strong> 건물 지하 전용 주차장 무료 완비</div>
+                </div>
+                <div class="place-buttons">
+                  <a href="https://m.place.naver.com/restaurant/1688679679/booking" target="_blank" class="btn-naver-link" style="background-color: var(--primary-gold); color: #121215;">
+                    [N] 명지직영점 네이버 예약
+                  </a>
+                  <a href="https://m.place.naver.com/restaurant/1688679679/location" target="_blank" class="btn-call-link">
+                    명지직영점 길찾기
+                  </a>
+                  <a href="https://m.place.naver.com/restaurant/1688679679/menu" target="_blank" class="btn-call-link">
+                    명지직영점 메뉴판
+                  </a>
+                </div>
               </div>
             </div>
           </div>
