@@ -1,5 +1,9 @@
 <script>
   import { onMount } from 'svelte';
+  import { bindScrollProgress, bindReveals, bindCardTilt, bindHeroParallax } from './lib/motion.js';
+  import { isBranchOpen, statusLabel } from './lib/hours.js';
+
+  const HeroAtmosphere = import('./lib/HeroAtmosphere.svelte').then((m) => m.default);
 
   // Navigation Links
   const NAV_LINKS = [
@@ -10,6 +14,7 @@
   ];
 
   // Branches Data (하단본점 & 명지직영점)
+  // 공통: 17:30–01:00 / 하단 일요일 휴무, 명지 일요일 운영
   const BRANCHES = [
     {
       id: 'hadan',
@@ -20,9 +25,7 @@
       phone: '0507-1336-6161',
       parking: '전용 주차타워 2시간 무료 지원 (신동아 주차장 인근)',
       placeId: '1059460378',
-      bookingUrl: 'https://m.place.naver.com/restaurant/1059460378/booking',
-      locationUrl: 'https://m.place.naver.com/restaurant/1059460378/location',
-      menuUrl: 'https://m.place.naver.com/restaurant/1059460378/menu'
+      schedule: { openMinutes: 17 * 60 + 30, closeMinutes: 60, closedWeekdays: [0] }
     },
     {
       id: 'myeongji',
@@ -32,14 +35,29 @@
       hours: '월~토 17:30 - 01:00 (라스트오더 00:00 / 일요일 운영)',
       phone: '010-3667-9386',
       parking: '건물 지하 주차장 완비 / 무료 주차 지원',
-      placeId: '1688679679',
-      bookingUrl: 'https://m.place.naver.com/restaurant/1688679679/booking',
-      locationUrl: 'https://m.place.naver.com/restaurant/1688679679/location',
-      menuUrl: 'https://m.place.naver.com/restaurant/1688679679/menu'
+      placeId: '2060161064',
+      schedule: { openMinutes: 17 * 60 + 30, closeMinutes: 60, closedWeekdays: [] }
     }
   ];
 
-  let selectedBranch = BRANCHES[0];
+  let nowTick = Date.now();
+  $: branchStatuses = Object.fromEntries(
+    BRANCHES.map((b) => {
+      const open = isBranchOpen(b.schedule, new Date(nowTick));
+      return [b.id, statusLabel(open)];
+    })
+  );
+  $: anyOpen = BRANCHES.some((b) => branchStatuses[b.id]?.open);
+  $: siteStatus = statusLabel(anyOpen);
+
+  // PC: pcmap.place / Mobile viewport: m.place
+  let isMobileViewport = false;
+  function placeUrl(placeId, path) {
+    const host = isMobileViewport
+      ? 'https://m.place.naver.com'
+      : 'https://pcmap.place.naver.com';
+    return `${host}/restaurant/${placeId}/${path}`;
+  }
 
   // Menu Data
   const MENU_CATEGORIES = ['전체', '시그니처 사시미', '한우 일품', '국물 & 요리', '전통주 페어링'];
@@ -102,31 +120,88 @@
     ? DISHES 
     : DISHES.filter(d => d.category === activeCategory);
 
-  // Scrolled State for Glass Navbar
+  /** @type {HTMLElement} */
+  let pageRoot;
+  /** @type {HTMLElement} */
+  let heroSection;
+  /** @type {HTMLElement} */
+  let heroMedia;
   let isScrolled = false;
+  let menuOpen = false;
+
+  function closeMenu() {
+    menuOpen = false;
+  }
+
+  /** Svelte action: shallow 3D tilt + spotlight */
+  function tilt(node) {
+    const destroy = bindCardTilt(node);
+    return { destroy };
+  }
+
   onMount(() => {
     const handleScroll = () => {
       isScrolled = window.scrollY > 40;
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    const unbindProgress = bindScrollProgress((p) => {
+      document.documentElement.style.setProperty('--scroll-progress', String(p));
+    });
+
+    const unbindReveals = bindReveals(pageRoot || document);
+    const unbindParallax =
+      heroMedia && heroSection ? bindHeroParallax(heroMedia, heroSection) : () => {};
+
+    const mq = window.matchMedia('(max-width: 767px)');
+    const syncViewport = () => {
+      isMobileViewport = mq.matches;
+    };
+    syncViewport();
+    mq.addEventListener('change', syncViewport);
+
+    const desktopMq = window.matchMedia('(min-width: 1024px)');
+    const syncMenu = () => {
+      if (desktopMq.matches) menuOpen = false;
+    };
+    syncMenu();
+    desktopMq.addEventListener('change', syncMenu);
+
+    const statusTimer = setInterval(() => {
+      nowTick = Date.now();
+    }, 60_000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      unbindProgress();
+      unbindReveals();
+      unbindParallax();
+      mq.removeEventListener('change', syncViewport);
+      desktopMq.removeEventListener('change', syncMenu);
+      clearInterval(statusTimer);
+    };
   });
 </script>
 
-<div class="min-h-screen bg-[#121215] text-[#f5f5f7] selection:bg-[#d4af37] selection:text-[#121215]">
+<div
+  bind:this={pageRoot}
+  class="min-h-screen bg-[#121215] text-[#f5f5f7] selection:bg-[#d4af37] selection:text-[#121215]"
+>
+  <div class="scroll-progress" aria-hidden="true"></div>
+
   <!-- 1. Floating Top Glass Navigation -->
-  <header class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-[#1a1a1e]/90 backdrop-blur-md border-b border-[#d4af37]/20 py-3 shadow-2xl' : 'bg-transparent py-5'}`}>
-    <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
-      <a href="#top" class="flex items-center gap-3 group">
-        <img src="/logo_profile.png" alt="다이닝도안 로고" class="w-10 h-10 rounded-full border border-[#d4af37]/60 group-hover:scale-105 transition-transform" />
-        <div>
-          <span class="font-serif text-xl font-bold tracking-wider text-[#d4af37]">다이닝도안</span>
-          <span class="hidden md:inline-block text-[10px] tracking-[0.25em] text-stone-400 ml-2 uppercase">Dining Doan</span>
+  <header class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || menuOpen ? 'bg-[#1a1a1e]/95 backdrop-blur-md border-b border-[#d4af37]/20 py-3 shadow-2xl' : 'bg-transparent py-4 sm:py-5'}`}>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
+      <a href="#top" class="flex items-center gap-2 sm:gap-3 group min-w-0" on:click={closeMenu}>
+        <img src="/logo_profile.png" alt="다이닝도안 로고" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#d4af37]/60 group-hover:scale-105 transition-transform shrink-0" />
+        <div class="min-w-0">
+          <span class="font-serif text-lg sm:text-xl font-bold tracking-wider text-[#d4af37]">다이닝도안</span>
+          <span class="hidden xl:inline-block text-[10px] tracking-[0.25em] text-stone-400 ml-2 uppercase">Dining Doan</span>
         </div>
       </a>
 
-      <!-- Desktop Nav Links -->
-      <nav class="hidden md:flex items-center gap-8">
+      <!-- Desktop / large tablet Nav Links -->
+      <nav class="hidden lg:flex items-center gap-6 xl:gap-8">
         {#each NAV_LINKS as link}
           <a 
             href={link.href} 
@@ -138,59 +213,102 @@
         {/each}
       </nav>
 
-      <!-- Naver Direct Booking CTA (하단본점 & 명지직영점 분기) -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 shrink-0">
         <a 
           href="#locations"
-          class="inline-flex items-center gap-2 bg-[#03C75A] hover:bg-[#02b150] text-white text-xs md:text-sm font-bold px-4 py-2.5 rounded-full shadow-lg shadow-[#03C75A]/25 hover:shadow-[#03C75A]/40 transition-all duration-200 transform hover:-translate-y-0.5"
+          on:click={closeMenu}
+          class="inline-flex items-center gap-1.5 sm:gap-2 bg-[#03C75A] hover:bg-[#02b150] text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-2.5 rounded-full shadow-lg shadow-[#03C75A]/25 hover:shadow-[#03C75A]/40 transition-all duration-200"
         >
           <span class="font-mono font-black text-sm">N</span>
-          <span>지점별 실시간 예약</span>
+          <span class="sm:hidden">예약</span>
+          <span class="hidden sm:inline">지점별 실시간 예약</span>
         </a>
+
+        <!-- Mobile / tablet menu toggle -->
+        <button
+          type="button"
+          class="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-md border border-[#d4af37]/30 bg-[#1a1a1e]/80 text-[#d4af37]"
+          aria-label={menuOpen ? '메뉴 닫기' : '메뉴 열기'}
+          aria-expanded={menuOpen}
+          on:click={() => (menuOpen = !menuOpen)}
+        >
+          {#if menuOpen}
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          {:else}
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          {/if}
+        </button>
       </div>
     </div>
+
+    {#if menuOpen}
+      <nav class="lg:hidden border-t border-[#d4af37]/15 bg-[#1a1a1e]/98 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-col">
+          {#each NAV_LINKS as link}
+            <a
+              href={link.href}
+              target={link.external ? '_blank' : '_self'}
+              on:click={closeMenu}
+              class="py-3.5 text-sm font-medium tracking-wider text-stone-200 border-b border-stone-800/80 last:border-0 hover:text-[#d4af37] transition-colors"
+            >
+              {link.name}
+            </a>
+          {/each}
+        </div>
+      </nav>
+    {/if}
   </header>
 
   <!-- 2. Hero Visual Section -->
-  <section id="top" class="relative h-[90vh] min-h-[640px] flex items-center justify-center overflow-hidden">
+  <section
+    id="top"
+    bind:this={heroSection}
+    class="relative min-h-[100svh] sm:min-h-[90vh] sm:h-[90vh] flex items-center justify-center overflow-hidden pb-28 sm:pb-0"
+  >
     <!-- Ambient Background with Overlay -->
-    <div class="absolute inset-0 z-0">
-      <img src="/bar_counter.jpg" alt="다이닝도안 매장 바 카운터 실물 원본" class="w-full h-full object-cover scale-105 filter brightness-[0.65] contrast-110" />
-      <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/50 to-black/50"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/15 via-transparent to-transparent"></div>
+    <div class="absolute inset-0 z-0 overflow-hidden">
+      <div bind:this={heroMedia} class="hero-media absolute inset-[-4%] will-change-transform">
+        <img src="/bar_counter.jpg" alt="다이닝도안 매장 바 카운터 실물 원본" class="w-full h-full object-cover object-center filter brightness-[0.62] contrast-110" />
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/55 to-black/45"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/12 via-transparent to-transparent"></div>
     </div>
 
+    {#await HeroAtmosphere then Atmosphere}
+      <Atmosphere />
+    {/await}
+
     <!-- Hero Content -->
-    <div class="relative z-10 max-w-4xl mx-auto px-6 text-center mt-12">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2a2a30]/80 border border-[#d4af37]/30 text-[#d4af37] text-xs font-semibold tracking-widest uppercase mb-6 backdrop-blur-md">
+    <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center mt-16 sm:mt-12">
+      <div class="hero-enter inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 sm:px-4 py-1.5 rounded-full bg-[#2a2a30]/80 border border-[#d4af37]/30 text-[#d4af37] text-[10px] sm:text-xs font-semibold tracking-widest uppercase mb-5 sm:mb-6 backdrop-blur-md">
         <span>Busan Modern Gastropub</span>
         <span class="w-1 h-1 rounded-full bg-[#d4af37]"></span>
         <span>하단본점 & 명지직영점</span>
       </div>
 
-      <h1 class="font-serif text-4xl sm:text-5xl md:text-6xl font-normal leading-[1.25] tracking-tight mb-6 text-white drop-shadow-2xl">
+      <h1 class="hero-enter hero-enter-delay-1 font-serif text-[1.75rem] leading-snug sm:text-5xl md:text-6xl font-normal sm:leading-[1.25] tracking-tight mb-5 sm:mb-6 text-white drop-shadow-2xl">
         맛과 멋이 공존하는<br />
         <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] via-[#f7e099] to-[#d4af37] font-semibold">
           밤의 미식 예술, 다이닝도안
         </span>
       </h1>
 
-      <p class="text-stone-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed mb-10">
-        당일 새벽 산지 직송 숙성 사시미와 최상급 1++ 한우 차돌사시미.<br class="hidden sm:inline" />
-        하단본점과 명지직영점의 은은한 황동 조명 아래에서 깊이 있는 미식을 경험하세요.
+      <p class="hero-enter hero-enter-delay-2 text-stone-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed mb-8 sm:mb-10 px-1">
+        차게 숙성된 회와, 숨 고른 한우.<br class="hidden sm:inline" />
+        황동빛 아래 고요히 열리는 밤의 식탁.
       </p>
 
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <div class="hero-enter hero-enter-delay-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full max-w-md sm:max-w-none mx-auto">
         <a 
           href="#locations" 
-          class="w-full sm:w-auto px-8 py-4 rounded-md bg-[#d4af37] hover:bg-[#c6923c] text-[#121215] font-bold text-sm md:text-base tracking-wider transition-all duration-200 shadow-xl shadow-[#d4af37]/20 flex items-center justify-center gap-3"
+          class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-md bg-[#d4af37] hover:bg-[#c6923c] text-[#121215] font-bold text-sm md:text-base tracking-wider transition-all duration-200 shadow-xl shadow-[#d4af37]/20 flex items-center justify-center gap-3"
         >
           <span>지점 선택 후 바로 예약하기</span>
           <span class="text-lg font-mono">↓</span>
         </a>
         <a 
           href="#menu" 
-          class="w-full sm:w-auto px-8 py-4 rounded-md bg-[#1a1a1e]/80 hover:bg-[#2a2a30] text-[#f5f5f7] border border-[#d4af37]/30 text-sm md:text-base font-medium tracking-wider transition-colors backdrop-blur-sm"
+          class="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-md bg-[#1a1a1e]/80 hover:bg-[#2a2a30] text-[#f5f5f7] border border-[#d4af37]/30 text-sm md:text-base font-medium tracking-wider transition-colors backdrop-blur-sm text-center"
         >
           시그니처 메뉴 살펴보기
         </a>
@@ -198,43 +316,54 @@
     </div>
 
     <!-- Quick Info Pill Bar at bottom of Hero -->
-    <div class="absolute bottom-6 left-0 right-0 z-10 px-6">
-      <div class="max-w-4xl mx-auto bg-[#1a1a1e]/80 border border-[#d4af37]/20 rounded-xl py-3 px-6 backdrop-blur-md flex flex-wrap items-center justify-around gap-4 text-xs sm:text-sm text-stone-300">
+    <div class="hero-enter hero-enter-delay-4 absolute bottom-4 sm:bottom-6 left-0 right-0 z-10 px-4 sm:px-6">
+      <div class="max-w-4xl mx-auto bg-[#1a1a1e]/85 border border-[#d4af37]/20 rounded-xl py-3 px-4 sm:px-6 backdrop-blur-md flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-around gap-2.5 sm:gap-4 text-xs sm:text-sm text-stone-300">
         <div class="flex items-center gap-2">
-          <span class="text-[#d4af37]">📍</span>
+          <span
+            class={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] sm:text-xs font-bold tracking-wider ${
+              siteStatus.open
+                ? 'bg-[#03C75A]/15 border-[#03C75A]/40 text-[#03C75A]'
+                : 'bg-stone-800/80 border-stone-600 text-stone-300'
+            }`}
+          >
+            <span class={`w-1.5 h-1.5 rounded-full ${siteStatus.open ? 'bg-[#03C75A]' : 'bg-stone-500'}`}></span>
+            {siteStatus.en}
+            <span class="font-medium opacity-80">· {siteStatus.ko}</span>
+          </span>
+        </div>
+        <div class="hidden sm:inline w-[1px] h-3 bg-stone-700"></div>
+        <div class="flex items-center gap-2">
+          <span class="text-[#d4af37]" aria-hidden="true">●</span>
           <span>하단본점 (사하구 낙동남로)</span>
+          <span class={`text-[10px] font-bold ${branchStatuses.hadan.open ? 'text-[#03C75A]' : 'text-stone-500'}`}>
+            {branchStatuses.hadan.en}
+          </span>
         </div>
         <div class="hidden sm:inline w-[1px] h-3 bg-stone-700"></div>
         <div class="flex items-center gap-2">
-          <span class="text-[#d4af37]">📍</span>
+          <span class="text-[#d4af37]" aria-hidden="true">●</span>
           <span>명지직영점 (강서구 명지국제2로)</span>
-        </div>
-        <div class="hidden sm:inline w-[1px] h-3 bg-stone-700"></div>
-        <div class="flex items-center gap-2">
-          <span class="text-[#03C75A] font-bold">✓</span>
-          <span>전 지점 네이버 실시간 예약 지원</span>
+          <span class={`text-[10px] font-bold ${branchStatuses.myeongji.open ? 'text-[#03C75A]' : 'text-stone-500'}`}>
+            {branchStatuses.myeongji.en}
+          </span>
         </div>
       </div>
     </div>
   </section>
 
   <!-- 3. Brand Story Section -->
-  <section id="story" class="py-24 px-6 max-w-5xl mx-auto">
-    <div class="grid md:grid-cols-2 gap-12 items-center">
-      <div class="relative">
+  <section id="story" class="py-16 sm:py-20 md:py-24 px-4 sm:px-6 max-w-5xl mx-auto">
+    <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+      <div class="relative reveal">
         <div class="aspect-[4/3] rounded-lg overflow-hidden border border-[#d4af37]/30 shadow-2xl">
           <!-- Real Original Dish Photo -->
           <img src="/sashimi_platter.jpg" alt="도안사시미 실물 원본 사진 (1920px+ 네이버 원본)" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
         </div>
-        <div class="absolute -bottom-6 -right-6 hidden sm:block bg-[#1a1a1e] border border-[#d4af37] p-4 rounded shadow-2xl text-center">
-          <span class="block text-2xl font-bold font-serif text-[#d4af37]">네이버 원본</span>
-          <span class="text-[11px] text-stone-400 uppercase tracking-widest">Original 1920px</span>
-        </div>
       </div>
 
-      <div class="space-y-6">
+      <div class="space-y-5 sm:space-y-6 reveal reveal-delay-1">
         <span class="text-xs uppercase tracking-[0.2em] text-[#d4af37] font-semibold block">Craft & Philosophy</span>
-        <h2 class="font-serif text-3xl sm:text-4xl font-normal text-white leading-tight">
+        <h2 class="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-white leading-tight">
           "타협하지 않는 원물 선별,<br />시간이 빚어낸 녹진한 감칠맛"
         </h2>
         <div class="w-12 h-[2px] bg-[#d4af37]"></div>
@@ -245,7 +374,7 @@
         <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
           하단본점에 이어 명지직영점까지 동일한 셰프의 장인정신과 레시피로 운영되며, 소중한 사람과 나누는 밤의 대화를 더욱 특별하게 만듭니다.
         </p>
-        <div class="pt-2 flex gap-6 text-stone-300 text-xs">
+        <div class="pt-2 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-x-6 sm:gap-y-2 text-stone-300 text-xs">
           <div>✓ 당일 도축 1++ 한우 취급</div>
           <div>✓ 완벽한 2인 특화 카운터석</div>
           <div>✓ 단체 프라이빗 룸 완비</div>
@@ -255,20 +384,20 @@
   </section>
 
   <!-- 4. Interactive Menu Showcase -->
-  <section id="menu" class="py-24 bg-[#16161a] border-y border-[#d4af37]/15">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="text-center max-w-2xl mx-auto mb-12">
+  <section id="menu" class="py-16 sm:py-20 md:py-24 bg-[#16161a] border-y border-[#d4af37]/15">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12 reveal">
         <span class="text-xs uppercase tracking-[0.25em] text-[#d4af37] font-semibold block mb-2">Artisanal Dining Menu</span>
-        <h2 class="font-serif text-3xl sm:text-4xl font-normal text-white">도안의 시그니처 미식 큐레이션</h2>
+        <h2 class="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-white">도안의 시그니처 미식 큐레이션</h2>
         <p class="text-stone-400 text-sm mt-3">신선한 식재료 본연의 맛을 정갈한 현대적 한식 터치로 풀어낸 대표 요리들입니다.</p>
       </div>
 
       <!-- Category Filter Tabs -->
-      <div class="flex flex-wrap items-center justify-center gap-2 mb-12">
+      <div class="flex flex-nowrap sm:flex-wrap items-center justify-start sm:justify-center gap-2 mb-8 sm:mb-12 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
         {#each MENU_CATEGORIES as cat}
           <button 
             on:click={() => activeCategory = cat}
-            class={`px-4 py-2 text-xs md:text-sm rounded-full transition-all duration-200 font-medium ${activeCategory === cat ? 'bg-[#d4af37] text-[#121215] font-bold shadow-lg shadow-[#d4af37]/20' : 'bg-[#1a1a1e] text-stone-400 border border-stone-800 hover:border-[#d4af37]/40 hover:text-white'}`}
+            class={`shrink-0 px-4 py-2.5 text-xs md:text-sm rounded-full transition-all duration-200 font-medium min-h-[40px] ${activeCategory === cat ? 'bg-[#d4af37] text-[#121215] font-bold shadow-lg shadow-[#d4af37]/20' : 'bg-[#1a1a1e] text-stone-400 border border-stone-800 hover:border-[#d4af37]/40 hover:text-white'}`}
           >
             {cat}
           </button>
@@ -276,12 +405,15 @@
       </div>
 
       <!-- Menu Grid Cards -->
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {#each filteredDishes as dish (dish.id)}
-          <div class="bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 rounded-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/60 flex flex-col">
+          <div
+            use:tilt
+            class="tilt-card bg-[#1a1a1e] border border-stone-800/80 hover:border-[#d4af37]/60 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/60 flex flex-col"
+          >
             <div class="aspect-[16/10] overflow-hidden relative">
               <img src={dish.image} alt={dish.name} class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-              <div class="absolute top-3 left-3 flex gap-1">
+              <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-1">
                 {#each dish.tags as tag}
                   <span class="px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] text-[#d4af37] font-semibold border border-[#d4af37]/30">
                     {tag}
@@ -290,23 +422,23 @@
               </div>
             </div>
 
-            <div class="p-5 flex-1 flex flex-col justify-between">
+            <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
               <div>
-                <div class="flex justify-between items-start mb-2">
-                  <h3 class="font-serif text-lg font-semibold text-white leading-snug">{dish.name}</h3>
-                  <span class="font-mono text-sm font-bold text-[#d4af37] ml-2 shrink-0">{dish.price}</span>
+                <div class="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start mb-2">
+                  <h3 class="font-serif text-base sm:text-lg font-semibold text-white leading-snug">{dish.name}</h3>
+                  <span class="font-mono text-sm font-bold text-[#d4af37] sm:ml-2 shrink-0">{dish.price}</span>
                 </div>
                 <p class="text-stone-400 text-xs leading-relaxed mb-4">{dish.desc}</p>
               </div>
 
-              <div class="pt-3 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
-                <span class="flex items-center gap-1.5">
-                  <span class="text-[#d4af37]">🍶 페어링:</span>
-                  <strong class="text-stone-300">{dish.pairing}</strong>
+              <div class="pt-3 border-t border-stone-800/80 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-[11px] text-stone-400">
+                <span class="flex items-center gap-1.5 min-w-0">
+                  <span class="text-[#d4af37] shrink-0">페어링:</span>
+                  <strong class="text-stone-300 truncate">{dish.pairing}</strong>
                 </span>
                 <a 
                   href="#locations"
-                  class="text-[#03C75A] font-bold hover:underline"
+                  class="text-[#03C75A] font-bold hover:underline shrink-0"
                 >
                   지점 예약 →
                 </a>
@@ -319,47 +451,63 @@
   </section>
 
   <!-- 5. Branches & Reservation Section (하단본점 + 명지직영점 2개 지점 분기) -->
-  <section id="locations" class="py-24 px-6 max-w-6xl mx-auto">
-    <div class="text-center max-w-2xl mx-auto mb-12">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#03C75A]/10 border border-[#03C75A]/30 text-[#03C75A] text-xs font-bold mb-3">
+  <section id="locations" class="py-16 sm:py-20 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12 reveal">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#03C75A]/10 border border-[#03C75A]/30 text-[#03C75A] text-[10px] sm:text-xs font-bold mb-3">
         <span>LOCATIONS & NAVER RESERVATION</span>
       </div>
-      <h2 class="font-serif text-3xl sm:text-4xl font-normal text-white">매장 안내 및 네이버 실시간 예약</h2>
+      <h2 class="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-white">매장 안내 및 네이버 실시간 예약</h2>
       <p class="text-stone-400 text-sm mt-3">방문하시고자 하는 지점을 선택하시면 해당 매장의 네이버 예약 및 지도 길찾기로 즉시 연결됩니다.</p>
     </div>
 
-    <!-- Branch Selection Cards (2열 나란히) -->
-    <div class="grid md:grid-cols-2 gap-8">
+    <!-- Branch Selection Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8">
       {#each BRANCHES as branch}
-        <div class="bg-[#1a1a1e] border border-[#d4af37]/25 hover:border-[#d4af37] rounded-2xl p-8 shadow-2xl transition-all duration-300 flex flex-col justify-between">
+        <div class="loc-glow reveal bg-[#1a1a1e] border border-[#d4af37]/25 hover:border-[#d4af37] rounded-2xl p-5 sm:p-8 shadow-2xl transition-all duration-300 flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-3 py-1 rounded bg-[#d4af37]/20 text-[#d4af37] text-xs font-bold border border-[#d4af37]/40">
-                {branch.badge}
-              </span>
-              <span class="text-xs text-stone-400 font-mono">Naver Place ID: {branch.placeId}</span>
+            <div class="flex items-center justify-between mb-4 gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded bg-[#d4af37]/20 text-[#d4af37] text-xs font-bold border border-[#d4af37]/40">
+                  {branch.badge}
+                </span>
+                <span
+                  class={`px-2.5 py-1 rounded text-[10px] font-bold tracking-wider border ${
+                    branchStatuses[branch.id].open
+                      ? 'bg-[#03C75A]/15 border-[#03C75A]/40 text-[#03C75A]'
+                      : 'bg-stone-800 border-stone-600 text-stone-400'
+                  }`}
+                >
+                  {branchStatuses[branch.id].en}
+                </span>
+              </div>
+              <span class="hidden sm:inline text-xs text-stone-400 font-mono">Naver Place ID: {branch.placeId}</span>
             </div>
 
-            <h3 class="font-serif text-2xl font-bold text-white mb-4">{branch.name}</h3>
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-white mb-4">{branch.name}</h3>
 
-            <div class="space-y-3 text-xs sm:text-sm text-stone-300 font-light mb-8">
+            <div class="space-y-3 text-xs sm:text-sm text-stone-300 font-light mb-6 sm:mb-8">
               <div class="flex items-start gap-3">
-                <span class="text-[#d4af37] font-bold shrink-0">주소</span>
-                <span>{branch.address}</span>
+                <span class="text-[#d4af37] font-bold shrink-0 w-14 sm:w-auto">주소</span>
+                <span class="break-keep">{branch.address}</span>
               </div>
               <div class="flex items-start gap-3">
-                <span class="text-[#d4af37] font-bold shrink-0">영업시간</span>
-                <span>{branch.hours}</span>
+                <span class="text-[#d4af37] font-bold shrink-0 w-14 sm:w-auto">영업시간</span>
+                <span class="break-keep">
+                  {branch.hours}
+                  <span class={`ml-2 font-semibold ${branchStatuses[branch.id].open ? 'text-[#03C75A]' : 'text-stone-500'}`}>
+                    · {branchStatuses[branch.id].ko}
+                  </span>
+                </span>
               </div>
               <div class="flex items-start gap-3">
-                <span class="text-[#d4af37] font-bold shrink-0">전화문의</span>
+                <span class="text-[#d4af37] font-bold shrink-0 w-14 sm:w-auto">전화문의</span>
                 <a href={`tel:${branch.phone.replace(/-/g, '')}`} class="text-white hover:text-[#d4af37] underline font-medium">
                   {branch.phone}
                 </a>
               </div>
               <div class="flex items-start gap-3">
-                <span class="text-[#d4af37] font-bold shrink-0">주차안내</span>
-                <span>{branch.parking}</span>
+                <span class="text-[#d4af37] font-bold shrink-0 w-14 sm:w-auto">주차안내</span>
+                <span class="break-keep">{branch.parking}</span>
               </div>
             </div>
           </div>
@@ -367,9 +515,10 @@
           <!-- Action Buttons for this branch -->
           <div class="space-y-2 pt-4 border-t border-stone-800">
             <a 
-              href={branch.bookingUrl} 
+              href={placeUrl(branch.placeId, 'booking')} 
               target="_blank"
-              class="w-full py-3.5 rounded bg-[#03C75A] hover:bg-[#02b150] text-white font-bold text-sm shadow-lg shadow-[#03C75A]/20 transition-all flex items-center justify-center gap-2"
+              rel="noopener noreferrer"
+              class="w-full py-3.5 rounded bg-[#03C75A] hover:bg-[#02b150] text-white font-bold text-sm shadow-lg shadow-[#03C75A]/20 transition-all flex items-center justify-center gap-2 min-h-[48px]"
             >
               <span class="font-mono font-black">N</span>
               <span>{branch.name.split(' ')[0]} 네이버 실시간 예약하기</span>
@@ -377,16 +526,18 @@
 
             <div class="grid grid-cols-2 gap-2">
               <a 
-                href={branch.locationUrl} 
+                href={placeUrl(branch.placeId, 'location')} 
                 target="_blank"
-                class="py-2.5 rounded bg-[#2a2a30] hover:bg-[#33333b] text-stone-200 border border-stone-700 text-xs font-medium transition-colors text-center"
+                rel="noopener noreferrer"
+                class="py-3 sm:py-2.5 rounded bg-[#2a2a30] hover:bg-[#33333b] text-stone-200 border border-stone-700 text-xs font-medium transition-colors text-center min-h-[44px] flex items-center justify-center"
               >
                 네이버 지도 길찾기
               </a>
               <a 
-                href={branch.menuUrl} 
+                href={placeUrl(branch.placeId, 'menu')} 
                 target="_blank"
-                class="py-2.5 rounded bg-[#2a2a30] hover:bg-[#33333b] text-stone-200 border border-stone-700 text-xs font-medium transition-colors text-center"
+                rel="noopener noreferrer"
+                class="py-3 sm:py-2.5 rounded bg-[#2a2a30] hover:bg-[#33333b] text-stone-200 border border-stone-700 text-xs font-medium transition-colors text-center min-h-[44px] flex items-center justify-center"
               >
                 전체 메뉴판 보기
               </a>
@@ -398,19 +549,20 @@
   </section>
 
   <!-- 6. Footer -->
-  <footer class="border-t border-stone-800/80 bg-[#0e0e11] py-12 px-6">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-stone-500">
-      <div class="flex items-center gap-3">
-        <img src="/logo_profile.png" alt="다이닝도안" class="w-8 h-8 rounded-full border border-stone-700" />
-        <div>
+  <footer class="border-t border-stone-800/80 bg-[#0e0e11] py-10 sm:py-12 px-4 sm:px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-xs text-stone-500">
+      <div class="flex items-start sm:items-center gap-3">
+        <img src="/logo_profile.png" alt="다이닝도안" class="w-8 h-8 rounded-full border border-stone-700 shrink-0" />
+        <div class="min-w-0">
           <span class="font-serif text-sm font-bold text-stone-300 block">다이닝도안 (Dining Doan)</span>
-          <span>하단본점: 부산 사하구 낙동남로1423번길 139 | 명지직영점: 부산 강서구 명지국제2로28번길 7</span>
+          <span class="block mt-1 leading-relaxed">하단본점: 부산 사하구 낙동남로1423번길 139</span>
+          <span class="block leading-relaxed">명지직영점: 부산 강서구 명지국제2로28번길 7</span>
         </div>
       </div>
 
-      <div class="flex items-center gap-6">
-        <a href="https://blog.naver.com" target="_blank" class="hover:text-[#03C75A] transition-colors">공식 네이버 블로그</a>
-        <a href="https://www.instagram.com/dining_doan" target="_blank" class="hover:text-[#d4af37] transition-colors">인스타그램</a>
+      <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+        <a href="https://blog.naver.com" target="_blank" rel="noopener noreferrer" class="hover:text-[#03C75A] transition-colors min-h-[44px] inline-flex items-center">공식 네이버 블로그</a>
+        <a href="https://www.instagram.com/dining_doan" target="_blank" rel="noopener noreferrer" class="hover:text-[#d4af37] transition-colors min-h-[44px] inline-flex items-center">인스타그램</a>
       </div>
     </div>
     <div class="text-center text-[11px] text-stone-600 mt-8">
