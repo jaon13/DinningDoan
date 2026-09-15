@@ -670,35 +670,20 @@
 아들 이름의 “도” 딸 이름의 “안”을 합쳐 만든 소중한 이름 입니다.
 </p>
 <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
-</p>
-<p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 좋은 사람과 맛있는 음식, 그리고 편안한 분위기까지.
-</p>
-<p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 다이닝도안은 평범한 술자리를 조금 더 특별하게 만들어주는 요리주점입니다.
 </p>
 <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
-</p>
-<p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 매일 신선한 재료를 준비해 직접 손질하고,
-</p>
-<p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 냉동식품 조리가 아닌, 재료 본연의 맛을 살린 다양한 요리를 선보입니다.
 </p>
 <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
-</p>
-<p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 예쁘게 차려낸 음식, 은은하고 편안한 공간, 그리고 한 분 한 분 대접받는 기분이 들 수 있는 서비스.
-</p>
-<p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 데이트부터 친구와의 모임, 회식과 단체 모임까지 누구와 함께 와도 편안하게 머물 수 있는 공간을 만들고 있습니다.
 </p>
-<p class="text-stone-400 text-sm sm:text-base leading-relaxed">
-</p>
+
 <p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 한 번 먹고 끝나는 곳보다
-</p>
-<p class="text-stone-400 text-sm sm:text-base leading-relaxed">
 다시 생각나는 곳이 되고 싶습니다.
 </p>
         <div class="pt-2 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-x-6 sm:gap-y-2 text-stone-300 text-xs">
