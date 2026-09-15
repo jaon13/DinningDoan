@@ -351,8 +351,26 @@
     <div class="absolute inset-0 z-0 overflow-hidden">
       <div bind:this={heroMedia} class="hero-media absolute inset-[-4%] will-change-transform">
         <img src={PLACE_IMG.hadanBar} alt="다이닝도안 하단본점 바 카운터 (네이버 플레이스)" class="w-full h-full object-cover object-center filter brightness-[0.62] contrast-110" referrerpolicy="no-referrer" />
+        <!-- Mobile-only hero atmosphere (blog VOD → public/hero-mobile.mp4); desktop keeps still + gradient -->
+        {#if isMobileViewport}
+          <video
+            class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+            src="./hero-mobile.mp4"
+            muted
+            playsinline
+            autoplay
+            loop
+            preload="metadata"
+            aria-hidden="true"
+            on:loadeddata={(e) => {
+              const v = /** @type {HTMLVideoElement} */ (e.currentTarget);
+              v.muted = true;
+              v.play?.().catch(() => {});
+            }}
+          ></video>
+        {/if}
       </div>
-      <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/55 to-black/45"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#121215] via-[#121215]/65 to-black/50"></div>
       <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/12 via-transparent to-transparent"></div>
       <!-- Curve accent fragment (site language; Three.js stays secondary) -->
       <svg class="curve-accent curve-accent--hero" viewBox="0 0 320 120" fill="none" aria-hidden="true">
