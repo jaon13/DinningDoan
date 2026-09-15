@@ -120,6 +120,40 @@
     menuOpen = false;
   }
 
+  /**
+   * Muted autoplay for iOS Safari / Android Chrome (playsinline + muted before play).
+   * @param {HTMLVideoElement} node
+   */
+  function autoplayMuted(node) {
+    const arm = () => {
+      node.muted = true;
+      node.defaultMuted = true;
+      node.playsInline = true;
+      node.volume = 0;
+      node.setAttribute('muted', '');
+      node.setAttribute('playsinline', '');
+      node.setAttribute('webkit-playsinline', '');
+    };
+
+    const tryPlay = () => {
+      arm();
+      const p = node.play?.();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    };
+
+    arm();
+    tryPlay();
+    node.addEventListener('loadeddata', tryPlay);
+    node.addEventListener('canplay', tryPlay);
+
+    return {
+      destroy() {
+        node.removeEventListener('loadeddata', tryPlay);
+        node.removeEventListener('canplay', tryPlay);
+      },
+    };
+  }
+
   /** Svelte action: shallow 3D tilt + spotlight */
   function tilt(node) {
     const destroy = bindCardTilt(node);
@@ -354,19 +388,18 @@
         <!-- Mobile-only hero atmosphere (blog VOD → public/hero-mobile.mp4); desktop keeps still + gradient -->
         {#if isMobileViewport}
           <video
+            use:autoplayMuted
             class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
             src="./hero-mobile.mp4"
             muted
             playsinline
+            webkit-playsinline
             autoplay
             loop
-            preload="metadata"
+            preload="auto"
+            disablepictureinpicture
+            disableremoteplayback
             aria-hidden="true"
-            on:loadeddata={(e) => {
-              const v = /** @type {HTMLVideoElement} */ (e.currentTarget);
-              v.muted = true;
-              v.play?.().catch(() => {});
-            }}
           ></video>
         {/if}
       </div>
@@ -385,20 +418,21 @@
 
     <!-- Hero Content -->
     <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center mt-16 sm:mt-12">
-      <div class="hero-enter inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 sm:px-4 py-1.5 rounded-full bg-[#2a2a30]/80 border border-[#d4af37]/30 text-[#d4af37] text-[10px] sm:text-xs font-semibold tracking-widest uppercase mb-5 sm:mb-6 backdrop-blur-md">
+      <!-- Hidden on mobile (≤767 / below md) so video atmosphere leads; visible tablet+ -->
+      <div class="hero-enter hidden md:inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 sm:px-4 py-1.5 rounded-full bg-[#2a2a30]/80 border border-[#d4af37]/30 text-[#d4af37] text-[10px] sm:text-xs font-semibold tracking-widest uppercase mb-5 sm:mb-6 backdrop-blur-md">
         <span>Busan Modern Gastropub</span>
         <span class="w-1 h-1 rounded-full bg-[#d4af37]"></span>
         <span>하단본점 & 명지직영점</span>
       </div>
 
-      <h1 class="hero-enter hero-enter-delay-1 font-serif text-[1.75rem] leading-snug sm:text-5xl md:text-6xl font-normal sm:leading-[1.25] tracking-tight mb-5 sm:mb-6 text-white drop-shadow-2xl">
+      <h1 class="hero-enter hero-enter-delay-1 hidden md:block font-serif text-[1.75rem] leading-snug sm:text-5xl md:text-6xl font-normal sm:leading-[1.25] tracking-tight mb-5 sm:mb-6 text-white drop-shadow-2xl">
         맛과 멋이 공존하는<br />
         <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] via-[#f7e099] to-[#d4af37] font-semibold">
           밤의 미식 예술, 다이닝도안
         </span>
       </h1>
 
-      <p class="hero-enter hero-enter-delay-2 text-stone-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed mb-8 sm:mb-10 px-1">
+      <p class="hero-enter hero-enter-delay-2 hidden md:block text-stone-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed mb-8 sm:mb-10 px-1">
         차게 숙성된 회와, 숨 고른 한우.<br class="hidden sm:inline" />
         황동빛 아래 고요히 열리는 밤의 식탁.
       </p>
